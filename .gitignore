@@ -1,0 +1,42 @@
+#Specific files
+DownloadCloo.html
+SAQ.txt
+
+#Folders
+Documentation/Reference/*
+Documentation/Tutorials/*
+ipch/
+
+#File types
+*.pdf
+*.zip
+
+
+#Ignore thumbnails created by windows
+Thumbs.db
+#Ignore files build by Visual Studio
+*.obj
+*.exe
+*.pdb
+*.user
+*.aps
+*.pch
+*.vspscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.bak
+*.cache
+*.ilk
+*.log
+[Bb]in
+[Dd]ebug*/
+*.lib
+*.sbr
+obj/
+[Rr]elease*/
+_ReSharper*/
+[Tt]est[Rr]esult*
