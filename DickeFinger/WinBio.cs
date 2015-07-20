@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using DickeFinger.Enums;
 using PInvoker.Marshal;
@@ -7,34 +6,13 @@ using WinBio;
 
 namespace DickeFinger
 {
-    public struct WinBioUnit
-    {
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private int _id;
-
-        public int Id
-        {
-            get { return _id; }
-        }
-    }
-
-    public struct WinBioStorageSchema
-    {
-        public int Factor;
-        public _GUID DatabaseId;
-        public _GUID DataFormat;
-        public int Attributes;
-        public short FilePath;
-        public short ConnectionString;
-    }
-
     //[SuppressUnmanagedCodeSecurity]
     public class WinBio
     {
         protected const string LibName = "winbio.dll";
 
         [DllImport(LibName, EntryPoint = "WinBioOpenSession")]
-        private extern static WinBioErrorCode OpenSession(
+        private static extern WinBioErrorCode OpenSession(
             WinBioBiometricType factor,
             WinBioPoolType poolType,
             WinBioSessionFlag flags,
@@ -78,41 +56,37 @@ namespace DickeFinger
         }
 
         [DllImport(LibName, EntryPoint = "WinBioCloseSession")]
-        public extern static WinBioErrorCode CloseSession(
+        public static extern WinBioErrorCode CloseSession(
             WinBioSessionHandle sessionHandle);
 
 
         [DllImport(LibName, EntryPoint = "WinBioEnumDatabases")]
         private static extern WinBioErrorCode EnumDatabases(
             WinBioBiometricType factor,
-            IntPtr storageSchemaArray,
+            out IntPtr storageSchemaArray,
             out int storageCount);
 
         public static WinBioErrorCode EnumDatabases(
             WinBioBiometricType factor,
-            ArrayPtr<WINBIO_STORAGE_SCHEMA> storageSchemaArray,
-            out int storageCount)
+            out WinBioStorageSchema[] storageSchemaArray)
         {
-            IPin pin1 = null;
+            IntPtr pointer;
+            int count;
+            var code = EnumDatabases(factor, out pointer, out count);
             try
             {
-                var pointer1 = IntPtr.Zero;
-                if (storageSchemaArray != null)
-                {
-                    pin1 = storageSchemaArray.Pin();
-                    pointer1 = pin1.Pointer;
-                }
-                return EnumDatabases(factor, pointer1, out storageCount);
+                storageSchemaArray = MarshalHelper.MarshalArrayOfStruct<WinBioStorageSchema>(pointer, count);
             }
             finally
             {
-                if (pin1 != null) pin1.Dispose();
+                Free(pointer);
             }
+            return code;
         }
 
 
         [DllImport(LibName, EntryPoint = "WinBioCaptureSample")]
-        private extern static WinBioErrorCode CaptureSample(
+        private static extern WinBioErrorCode CaptureSample(
             WinBioSessionHandle sessionHandle,
             WinBioBirPurpose purpose,
             WinBioBirDataFlags flags,
@@ -267,6 +241,6 @@ namespace DickeFinger
         }
 
         [DllImport(LibName, EntryPoint = "WinBioFree")]
-        public extern static WinBioErrorCode Free(IntPtr address);
+        private static extern WinBioErrorCode Free(IntPtr address);
     }
 }

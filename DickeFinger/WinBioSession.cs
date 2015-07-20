@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using DickeFinger.Enums;
 using PInvoker.Marshal;
 using WinBio;
@@ -44,22 +41,6 @@ namespace DickeFinger
             return unitId;
         }
 
-        public void EnumUnitIds()
-        {
-            var array = new ArrayPtr<WINBIO_UNIT_SCHEMA>();
-            var unitCount = new ArrayPtr<SIZE_T>();
-            var code = WinBio.EnumBiometricUnits(WinBioBiometricType.Fingerprint, array, unitCount);
-            if (code != WinBioErrorCode.Success) throw new WinBioException(code, "WinBioEnumBiometricUnits failed");
-            for (var i = 0; i < unitCount[0]; i++)
-            {
-                Console.WriteLine(array[i].UnitId);
-                Console.WriteLine(array[i].Manufacturer);
-                Console.WriteLine(array[i].Model);
-                Console.WriteLine(array[i].SerialNumber);
-                Console.WriteLine(array[i].Description);
-            }
-        }
-
         public void Identify()
         {
             var unitId = new ArrayPtr<WINBIO_UNIT_ID>();
@@ -82,28 +63,6 @@ namespace DickeFinger
             var code = WinBio.CaptureSample(_handle, WinBioBirPurpose.NoPurposeAvailable, WinBioBirDataFlags.Raw, unitId, sample, out sampleSize, out rejectDetail);
             if (code != WinBioErrorCode.Success) throw new WinBioException(code, "WinBioCaptureSample failed");
             Console.WriteLine("Captured sample size: {0}", sampleSize);
-        }
-
-        
-    }
-
-    public class WinBioDatabase
-    {
-        public static void EnumDatabases()
-        {
-            var schemaArray = new ArrayPtr<WINBIO_STORAGE_SCHEMA>();
-            int storageCount;
-            var code = WinBio.EnumDatabases(WinBioBiometricType.Fingerprint, schemaArray, out storageCount);
-            if (code != WinBioErrorCode.Success) throw new WinBioException(code, "WinBioEnumDatabases failed");
-            Console.WriteLine("Databases found: {0}", storageCount);
-            for (int i = 0; i < storageCount; i++)
-            {
-                Console.WriteLine("Database {0}", i);
-                var id = schemaArray[i].DatabaseId;
-                var guid = new Guid(id.Data1, id.Data2, id.Data3, id.Data4.ToArray(8));
-                Console.WriteLine("Id: {0}", guid);
-            }
-            //WinBio.Free(schemaArray)
         }
     }
 }
