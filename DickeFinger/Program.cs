@@ -28,7 +28,9 @@ namespace DickeFinger
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Exception: " + ex.GetType().Name);
                 Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
             }
             Thread.Sleep(2000);
         }

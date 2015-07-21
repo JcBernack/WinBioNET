@@ -1,32 +1,55 @@
-using System.Runtime.InteropServices;
+using System;
+using System.Security.Principal;
 using DickeFinger.Enums;
 
 namespace DickeFinger
 {
-    [StructLayout(LayoutKind.Explicit, Size = 76)]
-    public struct WinBioIdentity
+    public class WinBioIdentity
     {
-        [FieldOffset(0)]
+        public const int Size = 76;
+
         public WinBioIdentityType Type;
-
-        [FieldOffset(4)]
         public int Null;
-
-        //[FieldOffset(4)]
-        //public int Wildcard;
-
-        //[FieldOffset(4)]
-        //public Guid TemplateGuid;
-
-        //[FieldOffset(4)]
-        //public WinBioAccountSid AccountSidSize;
-    }
-
-    public struct WinBioAccountSid
-    {
+        public int Wildcard;
+        public Guid TemplateGuid;
         public int AccountSidSize;
+        public SecurityIdentifier AccountSid;
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 68)]
-        public char[] AccountSid;
+        public WinBioIdentity(byte[] bytes)
+        {
+            Type = (WinBioIdentityType)BitConverter.ToInt32(bytes, 0);
+            switch (Type)
+            {
+                case WinBioIdentityType.Null:
+                    Null = BitConverter.ToInt32(bytes, 4);
+                    break;
+                case WinBioIdentityType.Wildcard:
+                    Wildcard = BitConverter.ToInt32(bytes, 4);
+                    break;
+                case WinBioIdentityType.GUID:
+                    var guidBytes = new byte[16];
+                    Array.Copy(bytes, 4, guidBytes, 0, 16);
+                    TemplateGuid = new Guid(guidBytes);
+                    break;
+                case WinBioIdentityType.SID:
+                    AccountSidSize = BitConverter.ToInt32(bytes, 4);
+                    AccountSid = new SecurityIdentifier(bytes, 8);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public override string ToString()
+        {
+            switch (Type)
+            {
+                case WinBioIdentityType.Null: return string.Format("Null ({0})", Null);
+                case WinBioIdentityType.Wildcard: return string.Format("Wildcard ({0})", Wildcard);
+                case WinBioIdentityType.GUID: return string.Format("GUID ({0})", TemplateGuid);
+                case WinBioIdentityType.SID: return string.Format("SID ({0})", AccountSid);
+                default: throw new ArgumentOutOfRangeException();
+            }
+        }
     }
 }

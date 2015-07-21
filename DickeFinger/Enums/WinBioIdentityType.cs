@@ -20,6 +20,6 @@ namespace DickeFinger.Enums
         /// <summary>
         /// An account SID identifies the template.
         /// </summary>
-        Sid = 3
+        SID = 3
     }
 }

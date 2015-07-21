@@ -6,7 +6,7 @@ namespace DickeFinger
     public class WinBioSession
         : WinBioResource
     {
-        private WinBioSessionHandle _handle;
+        private readonly WinBioSessionHandle _handle;
 
         public WinBioSession()
             : this(WinBioPoolType.System, WinBioSessionFlag.Default)
@@ -21,7 +21,6 @@ namespace DickeFinger
 
         protected override void Dispose(bool manual)
         {
-            if (!_handle.IsValid) return;
             WinBio.CloseSession(_handle);
             Console.WriteLine("WinBioSession closed");
         }
@@ -37,10 +36,9 @@ namespace DickeFinger
             WinBioIdentity identity;
             WinBioBiometricSubType subFactor;
             WinBioRejectDetail rejectDetail;
-            var unitId = WinBio.WinBioIdentify(_handle, out identity, out subFactor, out rejectDetail);
+            var unitId = WinBio.Identify(_handle, out identity, out subFactor, out rejectDetail);
             Console.WriteLine("Unit Id: {0}", unitId);
-            Console.WriteLine("Identity type: {0}", identity.Type);
-            //Console.WriteLine("Identity sid size: {0}", identity.AccountSidSize);
+            Console.WriteLine("Identity: {0}", identity);
             Console.WriteLine("Sub factor: {0}", subFactor);
             Console.WriteLine("Reject details: {0}", rejectDetail);
         }

@@ -32,6 +32,7 @@ namespace DickeFinger
 
         public static void CloseSession(WinBioSessionHandle sessionHandle)
         {
+            if (!sessionHandle.IsValid) return;
             var code = WinBioCloseSession(sessionHandle);
             WinBioException.ThrowOnError(code, "WinBioOpenSession failed");
             sessionHandle.Invalidate();
@@ -102,21 +103,30 @@ namespace DickeFinger
         private extern static WinBioErrorCode Identify(
             WinBioSessionHandle sessionHandle,
             out int unitId,
-            out IntPtr identity,
+            IntPtr identity,
             out WinBioBiometricSubType subFactor,
             out WinBioRejectDetail rejectDetail);
 
-        public static int WinBioIdentify(
+        public static int Identify(
             WinBioSessionHandle sessionHandle,
             out WinBioIdentity identity,
             out WinBioBiometricSubType subFactor,
             out WinBioRejectDetail rejectDetail)
         {
             int unitId;
-            IntPtr pointer;
-            var code = Identify(sessionHandle, out unitId, out pointer, out subFactor, out rejectDetail);
-            WinBioException.ThrowOnError(code, "WinBioIdentify failed");
-            identity = (WinBioIdentity)Marshal.PtrToStructure(pointer, typeof(WinBioIdentity));
+            var bytes = new byte[WinBioIdentity.Size];
+            var handle = Marshal.AllocHGlobal(76);
+            try
+            {
+                var code = Identify(sessionHandle, out unitId, handle, out subFactor, out rejectDetail);
+                WinBioException.ThrowOnError(code, "WinBioIdentify failed");
+                Marshal.Copy(handle, bytes, 0, bytes.Length);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(handle);
+            }
+            identity = new WinBioIdentity(bytes);
             return unitId;
         }
 
