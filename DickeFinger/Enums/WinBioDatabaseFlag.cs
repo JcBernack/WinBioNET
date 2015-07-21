@@ -1,6 +1,6 @@
 using System;
 
-namespace DickeFinger
+namespace DickeFinger.Enums
 {
     [Flags]
     public enum WinBioDatabaseFlag

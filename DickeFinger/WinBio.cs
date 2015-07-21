@@ -56,34 +56,20 @@ namespace DickeFinger
         }
 
         [DllImport(LibName, EntryPoint = "WinBioCloseSession")]
-        public static extern WinBioErrorCode CloseSession(
-            WinBioSessionHandle sessionHandle);
+        public static extern WinBioErrorCode CloseSession(WinBioSessionHandle sessionHandle);
 
 
         [DllImport(LibName, EntryPoint = "WinBioEnumDatabases")]
-        private static extern WinBioErrorCode EnumDatabases(
-            WinBioBiometricType factor,
-            out IntPtr storageSchemaArray,
-            out int storageCount);
+        private static extern WinBioErrorCode EnumDatabases(WinBioBiometricType factor, out IntPtr storageSchemaArray, out int storageCount);
 
-        public static WinBioErrorCode EnumDatabases(
-            WinBioBiometricType factor,
-            out WinBioStorageSchema[] storageSchemaArray)
+        public static WinBioErrorCode EnumDatabases(WinBioBiometricType factor, out WinBioStorageSchema[] storageSchemaArray)
         {
             IntPtr pointer;
             int count;
             var code = EnumDatabases(factor, out pointer, out count);
-            try
-            {
-                storageSchemaArray = MarshalHelper.MarshalArrayOfStruct<WinBioStorageSchema>(pointer, count);
-            }
-            finally
-            {
-                Free(pointer);
-            }
+            MarshalArray(pointer, count, out storageSchemaArray);
             return code;
         }
-
 
         [DllImport(LibName, EntryPoint = "WinBioCaptureSample")]
         private static extern WinBioErrorCode CaptureSample(
@@ -151,37 +137,18 @@ namespace DickeFinger
         [DllImport(LibName, EntryPoint = "WinBioEnumBiometricUnits")]
         private static extern WinBioErrorCode EnumBiometricUnits(
             WinBioBiometricType factor,
-            IntPtr unitSchemaArray,
-            IntPtr unitCount);
+            out IntPtr unitSchemaArray,
+            out int unitCount);
 
         public static WinBioErrorCode EnumBiometricUnits(
             WinBioBiometricType factor,
-            ArrayPtr<WINBIO_UNIT_SCHEMA> unitSchemaArray,
-            ArrayPtr<SIZE_T> unitCount)
+            out WinBioUnitSchema[] unitSchemaArray)
         {
-            IPin pin1 = null;
-            IPin pin2 = null;
-            try
-            {
-                var pointer1 = IntPtr.Zero;
-                var pointer2 = IntPtr.Zero;
-                if (unitSchemaArray != null)
-                {
-                    pin1 = unitSchemaArray.Pin();
-                    pointer1 = pin1.Pointer;
-                }
-                if (unitCount != null)
-                {
-                    pin2 = unitCount.Pin();
-                    pointer2 = pin2.Pointer;
-                }
-                return EnumBiometricUnits(factor, pointer1, pointer2);
-            }
-            finally
-            {
-                if (pin1 != null) pin1.Dispose();
-                if (pin2 != null) pin2.Dispose();
-            }
+            IntPtr pointer;
+            int count;
+            var code = EnumBiometricUnits(factor, out pointer, out count);
+            MarshalArray(pointer, count, out unitSchemaArray);
+            return code;
         }
 
         [DllImport(LibName, EntryPoint = "WinBioIdentify")]
@@ -242,5 +209,29 @@ namespace DickeFinger
 
         [DllImport(LibName, EntryPoint = "WinBioFree")]
         private static extern WinBioErrorCode Free(IntPtr address);
+
+        private static void MarshalArray<T>(IntPtr pointer, int count, out T[] array)
+        {
+            if (pointer == IntPtr.Zero) array = null;
+            try
+            {
+                array = MarshalArrayOfStruct<T>(pointer, count);
+            }
+            finally
+            {
+                Free(pointer);
+            }
+        }
+
+        private static T[] MarshalArrayOfStruct<T>(IntPtr pointer, int count)
+        {
+            var data = new T[count];
+            for (var i = 0; i < count; i++)
+            {
+                data[i] = (T)Marshal.PtrToStructure(pointer, typeof(T));
+                pointer += Marshal.SizeOf(typeof(T));
+            }
+            return data;
+        }
     }
 }

@@ -1,7 +1,5 @@
 using System;
 using DickeFinger.Enums;
-using PInvoker.Marshal;
-using WinBio;
 
 namespace DickeFinger
 {
@@ -9,17 +7,23 @@ namespace DickeFinger
     {
         public static void EnumUnitIds()
         {
-            var array = new ArrayPtr<WINBIO_UNIT_SCHEMA>();
-            var unitCount = new ArrayPtr<SIZE_T>();
-            var code = WinBio.EnumBiometricUnits(WinBioBiometricType.Fingerprint, array, unitCount);
+            WinBioUnitSchema[] units;
+            var code = WinBio.EnumBiometricUnits(WinBioBiometricType.Fingerprint, out units);
             if (code != WinBioErrorCode.Success) throw new WinBioException(code, "WinBioEnumBiometricUnits failed");
-            for (var i = 0; i < unitCount[0]; i++)
+            Console.WriteLine("Biometric units found: {0}", units.Length);
+            for (var i = 0; i < units.Length; i++)
             {
-                Console.WriteLine(array[i].UnitId);
-                Console.WriteLine(array[i].Manufacturer);
-                Console.WriteLine(array[i].Model);
-                Console.WriteLine(array[i].SerialNumber);
-                Console.WriteLine(array[i].Description);
+                Console.WriteLine(units[i].UnitId);
+                Console.WriteLine(units[i].PoolType);
+                Console.WriteLine(units[i].BiometricFactor);
+                Console.WriteLine(units[i].SensorSubType);
+                Console.WriteLine(units[i].Capabilities);
+                Console.WriteLine(units[i].DeviceInstanceId);
+                Console.WriteLine(units[i].Description);
+                Console.WriteLine(units[i].Manufacturer);
+                Console.WriteLine(units[i].Model);
+                Console.WriteLine(units[i].SerialNumber);
+                Console.WriteLine(units[i].FirmwareVersion);
             }
         }
     }

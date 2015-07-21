@@ -13,7 +13,8 @@ namespace DickeFinger
         {
             try
             {
-                WinBioDatabase.EnumDatabases();
+                //WinBioDatabase.EnumDatabases();
+                WinBioUnit.EnumUnitIds();
                 //using (var session = new WinBioSession())
                 {
                     //session.LocateSensor();
@@ -26,7 +27,7 @@ namespace DickeFinger
             {
                 Console.WriteLine("Something went wrong: {0}", ex.Message);
             }
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
         }
     }
 }
