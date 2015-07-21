@@ -65,6 +65,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\WinBioBiometricSubType.cs" />
     <Compile Include="Enums\WinBioBiometricType.cs" />
     <Compile Include="Enums\WinBioBirDataFlags.cs" />
     <Compile Include="Enums\WinBioBirPurpose.cs" />
@@ -72,14 +73,18 @@
     <Compile Include="Enums\WinBioDatabase.cs" />
     <Compile Include="Enums\WinBioDatabaseFlag.cs" />
     <Compile Include="Enums\WinBioErrorCode.cs" />
+    <Compile Include="Enums\WinBioIdentityType.cs" />
     <Compile Include="Enums\WinBioPoolType.cs" />
     <Compile Include="Enums\WinBioRejectDetail.cs" />
     <Compile Include="Enums\WinBioSensorSubType.cs" />
     <Compile Include="Enums\WinBioSessionFlag.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Unused\WinBioBir.cs" />
+    <Compile Include="Unused\WinBioBirData.cs" />
     <Compile Include="WinBioDatabase.cs" />
     <Compile Include="WinBioException.cs" />
+    <Compile Include="WinBioIdentity.cs" />
     <Compile Include="WinBioSessionHandle.cs" />
     <Compile Include="WinBio.cs" />
     <Compile Include="WinBioObject.cs" />

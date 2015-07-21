@@ -1,8 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
 using DickeFinger.Enums;
-using PInvoker.Marshal;
-using WinBio;
 
 namespace DickeFinger
 {
@@ -12,7 +10,7 @@ namespace DickeFinger
         protected const string LibName = "winbio.dll";
 
         [DllImport(LibName, EntryPoint = "WinBioOpenSession")]
-        private static extern WinBioErrorCode OpenSession(
+        private extern static WinBioErrorCode OpenSession(
             WinBioBiometricType factor,
             WinBioPoolType poolType,
             WinBioSessionFlag flags,
@@ -21,194 +19,109 @@ namespace DickeFinger
             IntPtr databaseId,
             out WinBioSessionHandle sessionHandle);
 
-        public static WinBioErrorCode OpenSession(
-            WinBioBiometricType factor,
-            WinBioPoolType poolType,
-            WinBioSessionFlag flags,
-            ArrayPtr<int> unitArray,
-            int unitCount,
-            GUID databaseId,
-            out WinBioSessionHandle sessionHandle)
+        public static WinBioSessionHandle OpenSession(WinBioBiometricType factor, WinBioPoolType poolType, WinBioSessionFlag flags)
         {
-            IPin pin1 = null;
-            IPin pin2 = null;
-            try
-            {
-                var pointer1 = IntPtr.Zero;
-                var pointer2 = IntPtr.Zero;
-                if (unitArray != null)
-                {
-                    pin1 = unitArray.Pin();
-                    pointer1 = pin1.Pointer;
-                }
-                if (databaseId != null)
-                {
-                    pin2 = databaseId.Pin();
-                    pointer2 = pin2.Pointer;
-                }
-                return OpenSession(factor, poolType, flags, pointer1, unitCount, pointer2, out sessionHandle);
-            }
-            finally
-            {
-                if (pin1 != null) pin1.Dispose();
-                if (pin2 != null) pin2.Dispose();
-            }
+            WinBioSessionHandle sessionHandle;
+            var code = OpenSession(factor, poolType, flags, IntPtr.Zero, 0, IntPtr.Zero, out sessionHandle);
+            WinBioException.ThrowOnError(code, "WinBioOpenSession failed");
+            return sessionHandle;
         }
 
         [DllImport(LibName, EntryPoint = "WinBioCloseSession")]
-        public static extern WinBioErrorCode CloseSession(WinBioSessionHandle sessionHandle);
+        private extern static WinBioErrorCode WinBioCloseSession(WinBioSessionHandle sessionHandle);
 
-
+        public static void CloseSession(WinBioSessionHandle sessionHandle)
+        {
+            var code = WinBioCloseSession(sessionHandle);
+            WinBioException.ThrowOnError(code, "WinBioOpenSession failed");
+            sessionHandle.Invalidate();
+        }
+        
         [DllImport(LibName, EntryPoint = "WinBioEnumDatabases")]
-        private static extern WinBioErrorCode EnumDatabases(WinBioBiometricType factor, out IntPtr storageSchemaArray, out int storageCount);
+        private extern static WinBioErrorCode EnumDatabases(WinBioBiometricType factor, out IntPtr storageSchemaArray, out int storageCount);
 
-        public static WinBioErrorCode EnumDatabases(WinBioBiometricType factor, out WinBioStorageSchema[] storageSchemaArray)
+        public static WinBioStorageSchema[] EnumDatabases(WinBioBiometricType factor)
         {
             IntPtr pointer;
             int count;
             var code = EnumDatabases(factor, out pointer, out count);
-            MarshalArray(pointer, count, out storageSchemaArray);
-            return code;
+            WinBioException.ThrowOnError(code, "WinBioEnumDatabases failed");
+            return MarshalArray<WinBioStorageSchema>(pointer, count);
         }
 
         [DllImport(LibName, EntryPoint = "WinBioCaptureSample")]
-        private static extern WinBioErrorCode CaptureSample(
+        private extern static WinBioErrorCode CaptureSample(
             WinBioSessionHandle sessionHandle,
             WinBioBirPurpose purpose,
             WinBioBirDataFlags flags,
-            IntPtr unitId,
-            IntPtr sample,
+            out int unitId,
+            out IntPtr sample,
             out int sampleSize,
             out WinBioRejectDetail rejectDetail);
 
-        public static WinBioErrorCode CaptureSample(
+        public static int CaptureSample(
             WinBioSessionHandle sessionHandle,
             WinBioBirPurpose purpose,
             WinBioBirDataFlags flags,
-            ArrayPtr<WINBIO_UNIT_ID> unitId,
-            ArrayPtr<PWINBIO_BIR> sample,
             out int sampleSize,
             out WinBioRejectDetail rejectDetail)
         {
-            IPin pin1 = null;
-            IPin pin2 = null;
-            //IPin pin3 = null;
-            //IPin pin4 = null;
-            try
-            {
-                var pointer1 = IntPtr.Zero;
-                var pointer2 = IntPtr.Zero;
-                //var pointer3 = IntPtr.Zero;
-                //var pointer4 = IntPtr.Zero;
-                if (unitId != null)
-                {
-                    pin1 = unitId.Pin();
-                    pointer1 = pin1.Pointer;
-                }
-                if (sample != null)
-                {
-                    pin2 = sample.Pin();
-                    pointer2 = pin2.Pointer;
-                }
-                //if (sampleSize != null)
-                //{
-                //    pin3 = sampleSize.Pin();
-                //    pointer3 = pin3.Pointer;
-                //}
-                //if (rejectDetail != null)
-                //{
-                //    pin4 = rejectDetail.Pin();
-                //    pointer4 = pin4.Pointer;
-                //}
-                return CaptureSample(sessionHandle, purpose, flags, pointer1, pointer2, out sampleSize, out rejectDetail);
-            }
-            finally
-            {
-                if (pin1 != null) pin1.Dispose();
-                if (pin2 != null) pin2.Dispose();
-                //if (pin3 != null) pin3.Dispose();
-                //if (pin4 != null) pin4.Dispose();
-            }
+            int unitId;
+            IntPtr pointer;
+            var code = CaptureSample(sessionHandle, purpose, flags, out unitId, out pointer, out sampleSize, out rejectDetail);
+            WinBioException.ThrowOnError(code, "WinBioCaptureSample failed");
+            //TODO: parse WINBIO_BIR structure at pointer
+            Free(pointer);
+            return unitId;
         }
 
         [DllImport(LibName, EntryPoint = "WinBioLocateSensor")]
-        public static extern WinBioErrorCode LocateSensor(WinBioSessionHandle sessionHandle, out int unitId);
+        private extern static WinBioErrorCode LocateSensor(WinBioSessionHandle sessionHandle, out int unitId);
+
+        public static int LocateSensor(WinBioSessionHandle sessionHandle)
+        {
+            int unitId;
+            var code = LocateSensor(sessionHandle, out unitId);
+            WinBioException.ThrowOnError(code, "WinBioLocateSensor failed");
+            return unitId;
+        }
 
         [DllImport(LibName, EntryPoint = "WinBioEnumBiometricUnits")]
-        private static extern WinBioErrorCode EnumBiometricUnits(
-            WinBioBiometricType factor,
-            out IntPtr unitSchemaArray,
-            out int unitCount);
+        private extern static WinBioErrorCode EnumBiometricUnits(WinBioBiometricType factor, out IntPtr unitSchemaArray, out int unitCount);
 
-        public static WinBioErrorCode EnumBiometricUnits(
-            WinBioBiometricType factor,
-            out WinBioUnitSchema[] unitSchemaArray)
+        public static WinBioUnitSchema[] EnumBiometricUnits(WinBioBiometricType factor)
         {
             IntPtr pointer;
             int count;
             var code = EnumBiometricUnits(factor, out pointer, out count);
-            MarshalArray(pointer, count, out unitSchemaArray);
-            return code;
+            WinBioException.ThrowOnError(code, "WinBioEnumBiometricUnits failed");
+            return MarshalArray<WinBioUnitSchema>(pointer, count);
         }
 
         [DllImport(LibName, EntryPoint = "WinBioIdentify")]
-        private static extern WinBioErrorCode Identify(
+        private extern static WinBioErrorCode Identify(
             WinBioSessionHandle sessionHandle,
-            IntPtr unitId,
-            IntPtr identity,
-            IntPtr subFactor,
+            out int unitId,
+            out IntPtr identity,
+            out WinBioBiometricSubType subFactor,
             out WinBioRejectDetail rejectDetail);
 
-        public static WinBioErrorCode WinBioIdentify(
+        public static int WinBioIdentify(
             WinBioSessionHandle sessionHandle,
-            ArrayPtr<WINBIO_UNIT_ID> unitId,
-            WINBIO_IDENTITY identity,
-            ByteArrayPtr subFactor,
+            out WinBioIdentity identity,
+            out WinBioBiometricSubType subFactor,
             out WinBioRejectDetail rejectDetail)
         {
-            IPin pin1 = null;
-            IPin pin2 = null;
-            IPin pin3 = null;
-            //IPin pin4 = null;
-            try
-            {
-                var pointer1 = IntPtr.Zero;
-                var pointer2 = IntPtr.Zero;
-                var pointer3 = IntPtr.Zero;
-                //var pointer4 = IntPtr.Zero;
-                if (unitId != null)
-                {
-                    pin1 = unitId.Pin();
-                    pointer1 = pin1.Pointer;
-                }
-                if (identity != null)
-                {
-                    pin2 = identity.Pin();
-                    pointer2 = pin2.Pointer;
-                }
-                if (subFactor != null)
-                {
-                    pin3 = subFactor.Pin();
-                    pointer3 = pin3.Pointer;
-                }
-                //if (rejectDetail != null)
-                //{
-                //    pin4 = rejectDetail.Pin();
-                //    pointer4 = pin4.Pointer;
-                //}
-                return Identify(sessionHandle, pointer1, pointer2, pointer3, out rejectDetail);
-            }
-            finally
-            {
-                if (pin1 != null) pin1.Dispose();
-                if (pin2 != null) pin2.Dispose();
-                if (pin3 != null) pin3.Dispose();
-                //if (pin4 != null) pin4.Dispose();
-            }
+            int unitId;
+            IntPtr pointer;
+            var code = Identify(sessionHandle, out unitId, out pointer, out subFactor, out rejectDetail);
+            WinBioException.ThrowOnError(code, "WinBioIdentify failed");
+            identity = (WinBioIdentity)Marshal.PtrToStructure(pointer, typeof(WinBioIdentity));
+            return unitId;
         }
 
         [DllImport(LibName, EntryPoint = "WinBioFree")]
-        private static extern WinBioErrorCode Free(IntPtr address);
+        private extern static WinBioErrorCode Free(IntPtr address);
 
         private static void MarshalArray<T>(IntPtr pointer, int count, out T[] array)
         {
@@ -216,6 +129,19 @@ namespace DickeFinger
             try
             {
                 array = MarshalArrayOfStruct<T>(pointer, count);
+            }
+            finally
+            {
+                Free(pointer);
+            }
+        }
+
+        private static T[] MarshalArray<T>(IntPtr pointer, int count)
+        {
+            if (pointer == IntPtr.Zero) return null;
+            try
+            {
+                return MarshalArrayOfStruct<T>(pointer, count);
             }
             finally
             {

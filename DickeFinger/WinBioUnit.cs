@@ -7,9 +7,7 @@ namespace DickeFinger
     {
         public static void EnumUnitIds()
         {
-            WinBioUnitSchema[] units;
-            var code = WinBio.EnumBiometricUnits(WinBioBiometricType.Fingerprint, out units);
-            if (code != WinBioErrorCode.Success) throw new WinBioException(code, "WinBioEnumBiometricUnits failed");
+            var units = WinBio.EnumBiometricUnits(WinBioBiometricType.Fingerprint);
             Console.WriteLine("Biometric units found: {0}", units.Length);
             for (var i = 0; i < units.Length; i++)
             {

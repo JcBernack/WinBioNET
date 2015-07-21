@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using DickeFinger.Enums;
 
 namespace DickeFinger
 {
@@ -13,19 +14,21 @@ namespace DickeFinger
         {
             try
             {
+                Console.WriteLine();
                 //WinBioDatabase.EnumDatabases();
                 WinBioUnit.EnumUnitIds();
-                //using (var session = new WinBioSession())
+                Console.WriteLine();
+                using (var session = new WinBioSession(WinBioPoolType.System, WinBioSessionFlag.Default))
                 {
                     //session.LocateSensor();
                     //session.EnumUnitIds();
-                    //session.CaptureSample();
-                    //session.Identify();
+                    //session.CaptureSample(WinBioBirPurpose.NoPurposeAvailable, WinBioBirDataFlags.Raw);
+                    session.Identify();
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Something went wrong: {0}", ex.Message);
+                Console.WriteLine(ex.Message);
             }
             Thread.Sleep(2000);
         }
