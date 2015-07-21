@@ -115,16 +115,15 @@ namespace DickeFinger
         {
             int unitId;
             var bytes = new byte[WinBioIdentity.Size];
-            var handle = Marshal.AllocHGlobal(76);
+            var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             try
             {
-                var code = Identify(sessionHandle, out unitId, handle, out subFactor, out rejectDetail);
+                var code = Identify(sessionHandle, out unitId, handle.AddrOfPinnedObject(), out subFactor, out rejectDetail);
                 WinBioException.ThrowOnError(code, "WinBioIdentify failed");
-                Marshal.Copy(handle, bytes, 0, bytes.Length);
             }
             finally
             {
-                Marshal.FreeHGlobal(handle);
+                handle.Free();
             }
             identity = new WinBioIdentity(bytes);
             return unitId;

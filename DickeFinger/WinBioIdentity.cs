@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Security.Principal;
 using DickeFinger.Enums;
 
@@ -17,26 +18,29 @@ namespace DickeFinger
 
         public WinBioIdentity(byte[] bytes)
         {
-            Type = (WinBioIdentityType)BitConverter.ToInt32(bytes, 0);
-            switch (Type)
+            using (var stream = new MemoryStream(bytes, false))
+            using (var reader = new BinaryReader(stream))
             {
-                case WinBioIdentityType.Null:
-                    Null = BitConverter.ToInt32(bytes, 4);
-                    break;
-                case WinBioIdentityType.Wildcard:
-                    Wildcard = BitConverter.ToInt32(bytes, 4);
-                    break;
-                case WinBioIdentityType.GUID:
-                    var guidBytes = new byte[16];
-                    Array.Copy(bytes, 4, guidBytes, 0, 16);
-                    TemplateGuid = new Guid(guidBytes);
-                    break;
-                case WinBioIdentityType.SID:
-                    AccountSidSize = BitConverter.ToInt32(bytes, 4);
-                    AccountSid = new SecurityIdentifier(bytes, 8);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                Type = (WinBioIdentityType) reader.ReadInt32();
+                switch (Type)
+                {
+                    case WinBioIdentityType.Null:
+                        Null = reader.ReadInt32();
+                        break;
+                    case WinBioIdentityType.Wildcard:
+                        Wildcard = reader.ReadInt32();
+                        break;
+                    case WinBioIdentityType.GUID:
+                        TemplateGuid = new Guid(reader.ReadBytes(16));
+                        break;
+                    case WinBioIdentityType.SID:
+                        AccountSidSize = reader.ReadInt32();
+                        AccountSid = new SecurityIdentifier(reader.ReadBytes(68), 0);
+                        //AccountSid = new SecurityIdentifier(bytes, 8);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
         }
 

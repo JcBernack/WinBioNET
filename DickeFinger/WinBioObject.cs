@@ -5,7 +5,7 @@ namespace DickeFinger
     public class WinBioObject
         : IEquatable<WinBioObject>
     {
-        public ulong Handle
+        public IntPtr Handle
         {
             get; protected set;
         }
@@ -29,7 +29,7 @@ namespace DickeFinger
 
         public override string ToString()
         {
-            return GetType().Name + "(" + Handle.ToString() + ")";
+            return string.Format("{0}({1})", GetType().Name, Handle);
         }
     }
 }
