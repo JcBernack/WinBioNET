@@ -9,9 +9,14 @@ namespace DickeFinger.Enums
         : uint
     {
         /// <summary>
-        /// Success
+        /// Ok
         /// </summary>
-        Success = 0,
+        Ok = 0,
+
+        /// <summary>
+        /// False
+        /// </summary>
+        False = 1,
 
         /// <summary>
         /// General access denied error

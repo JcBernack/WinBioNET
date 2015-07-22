@@ -23,13 +23,13 @@ namespace DickeFinger
 
         public static void ThrowOnError(WinBioErrorCode errorCode, string message)
         {
-            if (errorCode == WinBioErrorCode.Success) return;
+            if (errorCode == WinBioErrorCode.Ok) return;
             throw new WinBioException(errorCode, message);
         }
 
         public static void ThrowOnError(WinBioErrorCode errorCode)
         {
-            if (errorCode == WinBioErrorCode.Success) return;
+            if (errorCode == WinBioErrorCode.Ok) return;
             throw new WinBioException(errorCode);
         }
     }
