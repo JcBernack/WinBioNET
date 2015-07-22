@@ -63,8 +63,8 @@
     <Compile Include="Enums\WinBioBiometricType.cs" />
     <Compile Include="Enums\WinBioBirDataFlags.cs" />
     <Compile Include="Enums\WinBioBirPurpose.cs" />
-    <Compile Include="Enums\WinbioCapabilitySensor.cs" />
-    <Compile Include="Enums\WinBioDatabase.cs" />
+    <Compile Include="Enums\WinBioCapabilitySensor.cs" />
+    <Compile Include="Enums\WinBioDatabaseId.cs" />
     <Compile Include="Enums\WinBioDatabaseFlag.cs" />
     <Compile Include="Enums\WinBioErrorCode.cs" />
     <Compile Include="Enums\WinBioIdentityType.cs" />

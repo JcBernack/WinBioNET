@@ -3,7 +3,7 @@ using System;
 namespace DickeFinger.Enums
 {
     [Flags]
-    public enum WinbioCapabilitySensor
+    public enum WinBioCapabilitySensor
     {
         Sensor = 0x00000001,
         Matching = 0x00000002,

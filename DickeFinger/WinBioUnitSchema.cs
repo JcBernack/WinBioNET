@@ -10,7 +10,7 @@ namespace DickeFinger
         public WinBioPoolType PoolType;
         public WinBioBiometricType BiometricFactor;
         public WinBioSensorSubType SensorSubType;
-        public WinbioCapabilitySensor Capabilities;
+        public WinBioCapabilitySensor Capabilities;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
         public string DeviceInstanceId;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
