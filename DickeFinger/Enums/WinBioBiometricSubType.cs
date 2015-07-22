@@ -13,6 +13,7 @@ namespace DickeFinger.Enums
         LhIndexFinger = 7,
         LhMiddleFinger = 8,
         LhRingFinger = 9,
-        LhLittleFinger = 10
+        LhLittleFinger = 10,
+        Any = 255
     }
 }

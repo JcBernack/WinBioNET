@@ -170,14 +170,6 @@ namespace DickeFinger
         [DllImport(LibName, EntryPoint = "WinBioEnrollCapture")]
         public extern static WinBioErrorCode EnrollCapture(WinBioSessionHandle sessionHandle, out WinBioRejectDetail rejectDetail);
 
-        //public static WinBioRejectDetail EnrollCapture(WinBioSessionHandle sessionHandle)
-        //{
-        //    WinBioRejectDetail rejectDetail;
-        //    var code = EnrollCapture(sessionHandle, out rejectDetail);
-        //    WinBioException.ThrowOnError(code, "WinBioEnrollCapture failed");
-        //    return rejectDetail;
-        //}
-
         [DllImport(LibName, EntryPoint = "WinBioEnrollCommit")]
         private extern static WinBioErrorCode EnrollCommit(WinBioSessionHandle sessionHandle, IntPtr identity, out bool isNewTemplate);
 
@@ -206,6 +198,36 @@ namespace DickeFinger
         {
             var code = WinBioEnrollDiscard(sessionHandle);
             WinBioException.ThrowOnError(code, "WinBioEnrollDiscard failed");
+        }
+
+        [DllImport(LibName, EntryPoint = "WinBioVerify")]
+        private static extern WinBioErrorCode Verify(
+            WinBioSessionHandle sessionHandle,
+            IntPtr identity,
+            WinBioBiometricSubType subFactor,
+            out int unitId,
+            out bool match,
+            out WinBioRejectDetail rejectDetail);
+
+        public static bool Verify(
+            WinBioSessionHandle sessionHandle,
+            WinBioIdentity identity,
+            WinBioBiometricSubType subFactor,
+            out int unitId,
+            out WinBioRejectDetail rejectDetail)
+        {
+            bool match;
+            var handle = GCHandle.Alloc(identity.GetBytes(), GCHandleType.Pinned);
+            try
+            {
+                var code = Verify(sessionHandle, handle.AddrOfPinnedObject(), subFactor, out unitId, out match, out rejectDetail);
+                WinBioException.ThrowOnError(code, "WinBioVerify failed");
+            }
+            finally
+            {
+                handle.Free();
+            }
+            return match;
         }
 
         [DllImport(LibName, EntryPoint = "WinBioFree")]
