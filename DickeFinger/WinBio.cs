@@ -266,6 +266,39 @@ namespace DickeFinger
             return MarshalArray<WinBioBspSchema>(bspSchemaArray, bspCount);
         }
 
+        [DllImport(LibName, EntryPoint = "WinBioGetLogonSetting")]
+        private extern static WinBioErrorCode GetLogonSetting(out bool value, out WinBioSettingSourceType source);
+
+        public static bool GetLogonSetting(out WinBioSettingSourceType source)
+        {
+            bool value;
+            //BUG: does not seem to work
+            var code = GetLogonSetting(out value, out source);
+            //WinBioException.ThrowOnError(code, "WinBioGetLogonSetting failed");
+            return value;
+        }
+
+        [DllImport(LibName, EntryPoint = "WinBioGetEnabledSetting")]
+        private extern static WinBioErrorCode GetEnabledSetting(out bool value, out WinBioSettingSourceType source);
+
+        public static bool GetEnabledSetting(out WinBioSettingSourceType source)
+        {
+            bool value;
+            //BUG: does not seem to work
+            var code = GetEnabledSetting(out value, out source);
+            //WinBioException.ThrowOnError(code, "WinBioGetEnabledSetting failed");
+            return value;
+        }
+
+        [DllImport(LibName, EntryPoint = "WinBioLogonIdentifiedUser")]
+        public static extern WinBioErrorCode LogonIdentifiedUser(WinBioSessionHandle sessionHandle);
+
+        [DllImport(LibName, EntryPoint = "WinBioAcquireFocus")]
+        public static extern WinBioErrorCode AcquireFocus(WinBioSessionHandle sessionHandle);
+
+        [DllImport(LibName, EntryPoint = "WinBioReleaseFocus")]
+        public static extern WinBioErrorCode ReleaseFocus(WinBioSessionHandle sessionHandle);
+
         [DllImport(LibName, EntryPoint = "WinBioFree")]
         private extern static WinBioErrorCode Free(IntPtr address);
 
