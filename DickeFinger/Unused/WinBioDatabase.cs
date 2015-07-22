@@ -1,7 +1,7 @@
 using System;
 using DickeFinger.Enums;
 
-namespace DickeFinger
+namespace DickeFinger.Unused
 {
     public class WinBioDatabase
     {

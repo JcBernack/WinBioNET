@@ -18,10 +18,15 @@ namespace DickeFinger
 
         public WinBioIdentity(byte[] bytes)
         {
+            FromBytes(bytes);
+        }
+
+        public void FromBytes(byte[] bytes)
+        {
             using (var stream = new MemoryStream(bytes, false))
             using (var reader = new BinaryReader(stream))
             {
-                Type = (WinBioIdentityType) reader.ReadInt32();
+                Type = (WinBioIdentityType)reader.ReadInt32();
                 switch (Type)
                 {
                     case WinBioIdentityType.Null:
@@ -36,12 +41,40 @@ namespace DickeFinger
                     case WinBioIdentityType.SID:
                         AccountSidSize = reader.ReadInt32();
                         AccountSid = new SecurityIdentifier(reader.ReadBytes(AccountSidSize), 0);
-                        //AccountSid = new SecurityIdentifier(bytes, 8);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
+        }
+
+        public byte[] GetBytes()
+        {
+            var bytes = new byte[Size];
+            using (var stream = new MemoryStream(bytes, true))
+            using (var writer = new BinaryWriter(stream))
+            {
+                writer.Write((int) Type);
+                switch (Type)
+                {
+                    case WinBioIdentityType.Null:
+                        writer.Write(Null);
+                        break;
+                    case WinBioIdentityType.Wildcard:
+                        writer.Write(Wildcard);
+                        break;
+                    case WinBioIdentityType.GUID:
+                        writer.Write(TemplateGuid.ToByteArray());
+                        break;
+                    case WinBioIdentityType.SID:
+                        writer.Write(AccountSidSize);
+                        AccountSid.GetBinaryForm(bytes, (int)stream.Position);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            return bytes;
         }
 
         public override string ToString()

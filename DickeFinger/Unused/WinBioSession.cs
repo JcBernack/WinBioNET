@@ -1,7 +1,7 @@
 using System;
 using DickeFinger.Enums;
 
-namespace DickeFinger
+namespace DickeFinger.Unused
 {
     public class WinBioSession
         : WinBioResource
@@ -26,10 +26,9 @@ namespace DickeFinger
             Console.WriteLine("WinBioSession closed");
         }
 
-        public void LocateSensor()
+        public int LocateSensor()
         {
-            var unitId = WinBio.LocateSensor(_handle);
-            Console.WriteLine("Sensor located: UnitID = {0}", unitId);
+            return WinBio.LocateSensor(_handle);
         }
 
         public void Identify()

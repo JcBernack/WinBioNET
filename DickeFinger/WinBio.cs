@@ -129,21 +129,87 @@ namespace DickeFinger
             return unitId;
         }
 
-        [DllImport(LibName, EntryPoint = "WinBioFree")]
-        private extern static WinBioErrorCode Free(IntPtr address);
+        [DllImport(LibName, EntryPoint = "WinBioEnumEnrollments")]
+        private extern static WinBioErrorCode EnumEnrollments(
+            WinBioSessionHandle sessionHandle,
+            int unitId,
+            IntPtr identity,
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)]
+            out WinBioBiometricSubType[] subFactorArray,
+            out int subFactorCount);
 
-        private static void MarshalArray<T>(IntPtr pointer, int count, out T[] array)
+        public static WinBioBiometricSubType[] EnumEnrollments(
+            WinBioSessionHandle sessionHandle,
+            int unitId,
+            WinBioIdentity identity)
         {
-            if (pointer == IntPtr.Zero) array = null;
+            WinBioBiometricSubType[] subFactorArray;
+            var handle = GCHandle.Alloc(identity.GetBytes(), GCHandleType.Pinned);
             try
             {
-                array = MarshalArrayOfStruct<T>(pointer, count);
+                int count;
+                var code = EnumEnrollments(sessionHandle, unitId, handle.AddrOfPinnedObject(), out subFactorArray, out count);
+                WinBioException.ThrowOnError(code, "WinBioEnumEnrollments failed");
             }
             finally
             {
-                Free(pointer);
+                handle.Free();
             }
+            return subFactorArray;
         }
+
+        [DllImport(LibName, EntryPoint = "WinBioEnrollBegin")]
+        private extern static WinBioErrorCode WinBioEnrollBegin(WinBioSessionHandle sessionHandle, WinBioBiometricSubType subType, int unitId);
+
+        public static void EnrollBegin(WinBioSessionHandle sessionHandle, WinBioBiometricSubType subType, int unitId)
+        {
+            var code = WinBioEnrollBegin(sessionHandle, subType, unitId);
+            WinBioException.ThrowOnError(code, "WinBioEnrollBegin failed");
+        }
+
+        [DllImport(LibName, EntryPoint = "WinBioEnrollCapture")]
+        public extern static WinBioErrorCode EnrollCapture(WinBioSessionHandle sessionHandle, out WinBioRejectDetail rejectDetail);
+
+        //public static WinBioRejectDetail EnrollCapture(WinBioSessionHandle sessionHandle)
+        //{
+        //    WinBioRejectDetail rejectDetail;
+        //    var code = EnrollCapture(sessionHandle, out rejectDetail);
+        //    WinBioException.ThrowOnError(code, "WinBioEnrollCapture failed");
+        //    return rejectDetail;
+        //}
+
+        [DllImport(LibName, EntryPoint = "WinBioEnrollCommit")]
+        private extern static WinBioErrorCode EnrollCommit(WinBioSessionHandle sessionHandle, IntPtr identity, out bool isNewTemplate);
+
+        public static bool EnrollCommit(WinBioSessionHandle sessionHandle, out WinBioIdentity identity)
+        {
+            bool isNewTemplate;
+            var bytes = new byte[WinBioIdentity.Size];
+            var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            try
+            {
+                var code = EnrollCommit(sessionHandle, handle.AddrOfPinnedObject(), out isNewTemplate);
+                WinBioException.ThrowOnError(code, "WinBioEnrollCommit failed");
+            }
+            finally
+            {
+                handle.Free();
+            }
+            identity = new WinBioIdentity(bytes);
+            return isNewTemplate;
+        }
+
+        [DllImport(LibName, EntryPoint = "WinBioEnrollDiscard")]
+        private extern static WinBioErrorCode WinBioEnrollDiscard(WinBioSessionHandle sessionHandle);
+
+        public static void EnrollDiscard(WinBioSessionHandle sessionHandle)
+        {
+            var code = WinBioEnrollDiscard(sessionHandle);
+            WinBioException.ThrowOnError(code, "WinBioEnrollDiscard failed");
+        }
+
+        [DllImport(LibName, EntryPoint = "WinBioFree")]
+        private extern static WinBioErrorCode Free(IntPtr address);
 
         private static T[] MarshalArray<T>(IntPtr pointer, int count)
         {

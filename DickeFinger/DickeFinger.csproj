@@ -82,16 +82,16 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Unused\WinBioBir.cs" />
     <Compile Include="Unused\WinBioBirData.cs" />
-    <Compile Include="WinBioDatabase.cs" />
+    <Compile Include="Unused\WinBioDatabase.cs" />
+    <Compile Include="Unused\WinBioObject.cs" />
+    <Compile Include="Unused\WinBioResource.cs" />
+    <Compile Include="Unused\WinBioSession.cs" />
+    <Compile Include="Unused\WinBioUnit.cs" />
     <Compile Include="WinBioException.cs" />
     <Compile Include="WinBioIdentity.cs" />
     <Compile Include="WinBioSessionHandle.cs" />
     <Compile Include="WinBio.cs" />
-    <Compile Include="WinBioObject.cs" />
-    <Compile Include="WinBioResource.cs" />
-    <Compile Include="WinBioSession.cs" />
     <Compile Include="WinBioStorageSchema.cs" />
-    <Compile Include="WinBioUnit.cs" />
     <Compile Include="WinBioUnitSchema.cs" />
     <Compile Include="WinBioVersion.cs" />
   </ItemGroup>

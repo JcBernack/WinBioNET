@@ -1,6 +1,6 @@
 using System;
 
-namespace DickeFinger
+namespace DickeFinger.Unused
 {
     public class WinBioObject
         : IEquatable<WinBioObject>

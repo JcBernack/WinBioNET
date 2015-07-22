@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace DickeFinger
+namespace DickeFinger.Unused
 {
     public abstract class WinBioResource
         : WinBioObject
