@@ -5,9 +5,11 @@ namespace DickeFinger
     public class WinBioObject
         : IEquatable<WinBioObject>
     {
-        public IntPtr Handle
+        private IntPtr _handle;
+
+        protected void SetID(IntPtr handle)
         {
-            get; protected set;
+            _handle = handle;
         }
 
         public override bool Equals(object other)
@@ -19,17 +21,17 @@ namespace DickeFinger
         public bool Equals(WinBioObject other)
         {
             if (other == null) return false;
-            return Handle.Equals(other.Handle);
+            return _handle.Equals(other._handle);
         }
 
         public override int GetHashCode()
         {
-            return Handle.GetHashCode();
+            return _handle.GetHashCode();
         }
 
         public override string ToString()
         {
-            return string.Format("{0}({1})", GetType().Name, Handle);
+            return string.Format("{0}({1})", GetType().Name, _handle);
         }
     }
 }

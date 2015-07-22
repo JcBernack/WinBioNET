@@ -35,7 +35,7 @@ namespace DickeFinger
                         break;
                     case WinBioIdentityType.SID:
                         AccountSidSize = reader.ReadInt32();
-                        AccountSid = new SecurityIdentifier(reader.ReadBytes(68), 0);
+                        AccountSid = new SecurityIdentifier(reader.ReadBytes(AccountSidSize), 0);
                         //AccountSid = new SecurityIdentifier(bytes, 8);
                         break;
                     default:

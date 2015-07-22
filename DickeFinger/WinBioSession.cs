@@ -16,6 +16,7 @@ namespace DickeFinger
         public WinBioSession(WinBioPoolType poolType, WinBioSessionFlag sessionFlags)
         {
             _handle = WinBio.OpenSession(WinBioBiometricType.Fingerprint, poolType, sessionFlags);
+            SetID(_handle.Value);
             Console.WriteLine("WinBioSession opened: " + _handle.Value);
         }
 

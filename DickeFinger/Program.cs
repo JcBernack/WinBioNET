@@ -15,7 +15,7 @@ namespace DickeFinger
             try
             {
                 Console.WriteLine();
-                //WinBioDatabase.EnumDatabases();
+                WinBioDatabase.EnumDatabases();
                 WinBioUnit.EnumUnitIds();
                 Console.WriteLine();
                 using (var session = new WinBioSession(WinBioPoolType.System, WinBioSessionFlag.Default))
@@ -23,7 +23,7 @@ namespace DickeFinger
                     //session.LocateSensor();
                     //session.EnumUnitIds();
                     //session.CaptureSample(WinBioBirPurpose.NoPurposeAvailable, WinBioBirDataFlags.Raw);
-                    session.Identify();
+                    //session.Identify();
                 }
             }
             catch (Exception ex)

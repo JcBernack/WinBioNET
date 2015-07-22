@@ -16,7 +16,7 @@ namespace DickeFinger
 
         ~WinBioResource()
         {
-            Trace.WriteLine(ToString() + " leaked!", "Warning");
+            Trace.TraceWarning(ToString() + " leaked!");
             Dispose(false);
         }
 
