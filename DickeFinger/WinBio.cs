@@ -134,28 +134,24 @@ namespace DickeFinger
             WinBioSessionHandle sessionHandle,
             int unitId,
             IntPtr identity,
-            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)]
-            out WinBioBiometricSubType[] subFactorArray,
+            out IntPtr subFactorArray,
             out int subFactorCount);
 
-        public static WinBioBiometricSubType[] EnumEnrollments(
-            WinBioSessionHandle sessionHandle,
-            int unitId,
-            WinBioIdentity identity)
+        public static WinBioBiometricSubType[] EnumEnrollments(WinBioSessionHandle sessionHandle, int unitId, WinBioIdentity identity)
         {
-            WinBioBiometricSubType[] subFactorArray;
             var handle = GCHandle.Alloc(identity.GetBytes(), GCHandleType.Pinned);
             try
             {
-                int count;
-                var code = EnumEnrollments(sessionHandle, unitId, handle.AddrOfPinnedObject(), out subFactorArray, out count);
+                IntPtr subFactorArray;
+                int subFactorCount;
+                var code = EnumEnrollments(sessionHandle, unitId, handle.AddrOfPinnedObject(), out subFactorArray, out subFactorCount);
                 WinBioException.ThrowOnError(code, "WinBioEnumEnrollments failed");
+                return MarshalArray<WinBioBiometricSubType>(subFactorArray, subFactorCount);
             }
             finally
             {
                 handle.Free();
             }
-            return subFactorArray;
         }
 
         [DllImport(LibName, EntryPoint = "WinBioEnrollBegin")]
@@ -230,31 +226,77 @@ namespace DickeFinger
             return match;
         }
 
+        [DllImport(LibName, EntryPoint = "WinBioDeleteTemplate")]
+        private static extern WinBioErrorCode DeleteTemplate(
+            WinBioSessionHandle sessionHandle,
+            int unitId,
+            IntPtr identity,
+            WinBioBiometricSubType subFactor);
+
+        public static void DeleteTemplate(
+            WinBioSessionHandle sessionHandle,
+            int unitId,
+            WinBioIdentity identity,
+            WinBioBiometricSubType subFactor)
+        {
+            var handle = GCHandle.Alloc(identity.GetBytes(), GCHandleType.Pinned);
+            try
+            {
+                var code = DeleteTemplate(sessionHandle, unitId, handle.AddrOfPinnedObject(), subFactor);
+                WinBioException.ThrowOnError(code, "WinBioDeleteTemplate failed");
+            }
+            finally
+            {
+                handle.Free();
+            }
+        }
+
+        [DllImport(LibName, EntryPoint = "WinBioEnumServiceProviders")]
+        private static extern WinBioErrorCode EnumServiceProviders(
+            WinBioBiometricType factor,
+            out IntPtr bspSchemaArray,
+            out int bspCount);
+
+        public static WinBioBspSchema[] EnumServiceProviders(WinBioBiometricType factor)
+        {
+            IntPtr bspSchemaArray;
+            int bspCount;
+            var code = EnumServiceProviders(factor, out bspSchemaArray, out bspCount);
+            WinBioException.ThrowOnError(code, "WinBioEnumServiceProviders failed");
+            return MarshalArray<WinBioBspSchema>(bspSchemaArray, bspCount);
+        }
+
         [DllImport(LibName, EntryPoint = "WinBioFree")]
         private extern static WinBioErrorCode Free(IntPtr address);
 
+        /// <summary>
+        /// Marshals an array of type T at the given address and frees the unmanaged memory afterwards.
+        /// Supports primitive types, structures and enums.
+        /// </summary>
+        /// <typeparam name="T">Type of the array elements.</typeparam>
+        /// <param name="pointer">Address of the array in unmanaged memory.</param>
+        /// <param name="count">Number of elements in the array.</param>
+        /// <returns>Managed array of the given type.</returns>
         private static T[] MarshalArray<T>(IntPtr pointer, int count)
         {
             if (pointer == IntPtr.Zero) return null;
             try
             {
-                return MarshalArrayOfStruct<T>(pointer, count);
+                var offset = pointer;
+                var data = new T[count];
+                var type = typeof (T);
+                if (type.IsEnum) type = type.GetEnumUnderlyingType();
+                for (var i = 0; i < count; i++)
+                {
+                    data[i] = (T) Marshal.PtrToStructure(offset, type);
+                    offset += Marshal.SizeOf(type);
+                }
+                return data;
             }
             finally
             {
                 Free(pointer);
             }
-        }
-
-        private static T[] MarshalArrayOfStruct<T>(IntPtr pointer, int count)
-        {
-            var data = new T[count];
-            for (var i = 0; i < count; i++)
-            {
-                data[i] = (T)Marshal.PtrToStructure(pointer, typeof(T));
-                pointer += Marshal.SizeOf(typeof(T));
-            }
-            return data;
         }
     }
 }

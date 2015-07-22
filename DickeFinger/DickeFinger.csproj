@@ -87,6 +87,7 @@
     <Compile Include="Unused\WinBioResource.cs" />
     <Compile Include="Unused\WinBioSession.cs" />
     <Compile Include="Unused\WinBioUnit.cs" />
+    <Compile Include="WinBioBspSchema.cs" />
     <Compile Include="WinBioException.cs" />
     <Compile Include="WinBioIdentity.cs" />
     <Compile Include="WinBioSessionHandle.cs" />
