@@ -280,7 +280,8 @@ namespace DickeFinger.Enums
 
         /// <summary>
         /// The System sensor pool cannot be opened from Terminal Server client sessions.
-        /// </nsole = 0x80098038,
+        /// </summary>
+        NotActiveConsole = 0x80098038,
 
         /// <summary>
         /// There is already an active event monitor associated with the specified session.
@@ -311,6 +312,6 @@ namespace DickeFinger.Enums
         /// Informational messages:
         /// Another sample is needed for the current enrollment template.
         /// </summary>
-        WinbioIMoreData = 0x00090001,
+        MoreData = 0x00090001,
     }
 }

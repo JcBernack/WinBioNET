@@ -31,13 +31,13 @@ namespace DickeFinger
                     var addEnrollment = WinBioBiometricSubType.RhRingFinger;
                     Console.WriteLine("Beginning enrollment of {0}:", addEnrollment);
                     WinBio.EnrollBegin(session, addEnrollment, unitId);
-                    var code = WinBioErrorCode.WinbioIMoreData;
+                    var code = WinBioErrorCode.MoreData;
                     for (var swipes = 1; code != WinBioErrorCode.Success; swipes++)
                     {
                         code = WinBio.EnrollCapture(session, out rejectDetail);
                         switch (code)
                         {
-                            case WinBioErrorCode.WinbioIMoreData:
+                            case WinBioErrorCode.MoreData:
                                 Console.WriteLine("Swipe {0} was good", swipes);
                                 break;
                             case WinBioErrorCode.BadCapture:
