@@ -55,12 +55,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Interop.WinBio">
-      <HintPath>..\Dependencies\Interop.WinBio.dll</HintPath>
-    </Reference>
-    <Reference Include="PInvoker.Marshal">
-      <HintPath>..\Dependencies\PInvoker.Marshal.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
