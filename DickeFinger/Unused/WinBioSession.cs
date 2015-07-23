@@ -9,13 +9,8 @@ namespace DickeFinger.Unused
         private readonly WinBioSessionHandle _handle;
 
         public WinBioSession()
-            : this(WinBioPoolType.System, WinBioSessionFlag.Default)
         {
-        }
-
-        public WinBioSession(WinBioPoolType poolType, WinBioSessionFlag sessionFlags)
-        {
-            _handle = WinBio.OpenSession(WinBioBiometricType.Fingerprint, poolType, sessionFlags);
+            _handle = WinBio.OpenSession(WinBioBiometricType.Fingerprint);
             SetID(_handle.Value);
             Console.WriteLine("WinBioSession opened: " + _handle.Value);
         }

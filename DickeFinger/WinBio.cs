@@ -14,17 +14,46 @@ namespace DickeFinger
             WinBioBiometricType factor,
             WinBioPoolType poolType,
             WinBioSessionFlag flags,
-            IntPtr unitArray,
+            int[] unitArray,
             int unitCount,
             IntPtr databaseId,
             out WinBioSessionHandle sessionHandle);
 
-        public static WinBioSessionHandle OpenSession(WinBioBiometricType factor, WinBioPoolType poolType, WinBioSessionFlag flags)
+        [DllImport(LibName, EntryPoint = "WinBioOpenSession")]
+        private extern static WinBioErrorCode OpenSession(
+            WinBioBiometricType factor,
+            WinBioPoolType poolType,
+            WinBioSessionFlag flags,
+            int[] unitArray,
+            int unitCount,
+            [MarshalAs(UnmanagedType.LPStruct)]
+            Guid databaseId,
+            out WinBioSessionHandle sessionHandle);
+
+        private static WinBioSessionHandle OpenSession(WinBioBiometricType factor, WinBioPoolType poolType, WinBioSessionFlag flags, int[] unitArray, IntPtr databaseId)
         {
             WinBioSessionHandle sessionHandle;
-            var code = OpenSession(factor, poolType, flags, IntPtr.Zero, 0, IntPtr.Zero, out sessionHandle);
+            var code = OpenSession(factor, poolType, flags, unitArray, unitArray == null ? 0 : unitArray.Length, databaseId, out sessionHandle);
             WinBioException.ThrowOnError(code, "WinBioOpenSession failed");
             return sessionHandle;
+        }
+        
+        public static WinBioSessionHandle OpenSession(WinBioBiometricType factor, WinBioPoolType poolType, WinBioSessionFlag flags, int[] unitArray, Guid databaseId)
+        {
+            WinBioSessionHandle sessionHandle;
+            var code = OpenSession(factor, poolType, flags, unitArray, unitArray.Length, databaseId, out sessionHandle);
+            WinBioException.ThrowOnError(code, "WinBioOpenSession failed");
+            return sessionHandle;
+        }
+
+        public static WinBioSessionHandle OpenSession(WinBioBiometricType factor, WinBioPoolType poolType, WinBioSessionFlag flags, int[] unitArray, WinBioDatabaseId databaseId)
+        {
+            return OpenSession(factor, poolType, flags, unitArray, (IntPtr)databaseId);
+        }
+
+        public static WinBioSessionHandle OpenSession(WinBioBiometricType factor)
+        {
+            return OpenSession(factor, WinBioPoolType.System, WinBioSessionFlag.Default, null, WinBioDatabaseId.Default);
         }
 
         [DllImport(LibName, EntryPoint = "WinBioCloseSession")]
@@ -36,6 +65,15 @@ namespace DickeFinger
             var code = WinBioCloseSession(sessionHandle);
             WinBioException.ThrowOnError(code, "WinBioOpenSession failed");
             sessionHandle.Invalidate();
+        }
+
+        [DllImport(LibName, EntryPoint = "WinBioCancel")]
+        private extern static WinBioErrorCode WinBioCancel(WinBioSessionHandle sessionHandle);
+
+        public static void Cancel(WinBioSessionHandle sessionHandle)
+        {
+            var code = WinBioCancel(sessionHandle);
+            WinBioException.ThrowOnError(code, "WinBioCancel failed");
         }
         
         [DllImport(LibName, EntryPoint = "WinBioEnumDatabases")]
