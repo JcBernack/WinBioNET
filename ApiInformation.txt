@@ -1,0 +1,40 @@
+## About sensor pools
+
+# Using a system pool
+Identities are using the windows account SID.
+An identity can hold one unique template for each sub-factor.
+New templates are always enrolled for the identity of the current windows user.
+
+# Using a private pool
+Identities are using unique GUIDs.
+An identity always holds a single unique template for one sub-factor.
+New templates always create a new identity.
+
+## Registry structure
+
+# Device configurations are stored at:
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\ + unit.DeviceInstanceId + \Device Parameters\WinBio\Configurations\ + number
+where number is a zero-based increasing index
+and unit.DeviceInstanceId is something like: USB\VID_1C7A&PID_0603\6&efec896&0&3
+
+# Databases are stored at:
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WbioSrvc\Databases\{ + DatabaseId + }
+where DatabaseId is a Guid
+
+# Device configuration fields are:
+DWORD SensorMode			Insert 1 or 2 for WinBioSensorMode.Basic and Advanced.
+DWORD SystemSensor			Insert 0, a value of 1 corresponds to the system pool.
+SZ    DatabaseId			Insert guid of correspondig database.
+SZ    SensorAdapterBinary	Insert path to dll, copy from default configuration.
+SZ    EngineAdapterBinary	Insert path to dll, copy from default configuration.
+SZ    StorageAdapterBinary	Insert path to dll, copy from default configuration.
+
+# Database fields are:
+DWORD Attributes		Insert 1 for WinBioDatabaseFlag.TypeFile. Probably can contain any value of WinBioDatabaseFlag.
+DWORD AutoCreate		Insert 1.
+DWORD AutoName			Insert 1, will be set to 0 upon database creation.
+DWORD BiometricType		Insert 8 for WinBioBiometricType.Fingerprint.
+SZ    ConnectionString	Insert empty. Probably used if something other than WinBioDatabaseFlag.TypeFile is used.
+SZ    FilePath			Insert empty, will be set by the storage adapter to the path of the database file on creation.
+SZ    Format			Insert an empty Guid: "00000000-0000-0000-0000-000000000000". No idea what it means.
+DWORD InitialSize		Insert (int)32. No idea what it actually means. Size of what? I what unit?
