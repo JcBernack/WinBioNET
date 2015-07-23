@@ -10,12 +10,12 @@ namespace DickeFinger.Enums
         /// Represents a mask for the flag bits.
         /// </summary>
         FlagMask = 0xFFFF0000,
-        
+
         /// <summary>
         /// The database resides on a removable drive.
         /// </summary>
         FlagRemovable = 0x00010000,
-        
+
         /// <summary>
         /// The database resides on a remote computer.
         /// </summary>

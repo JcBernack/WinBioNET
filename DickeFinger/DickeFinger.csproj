@@ -70,6 +70,7 @@
     <Compile Include="Enums\WinBioIdentityType.cs" />
     <Compile Include="Enums\WinBioPoolType.cs" />
     <Compile Include="Enums\WinBioRejectDetail.cs" />
+    <Compile Include="Enums\WinBioSensorMode.cs" />
     <Compile Include="Enums\WinBioSensorSubType.cs" />
     <Compile Include="Enums\WinBioSessionFlag.cs" />
     <Compile Include="Enums\WinBioSettingSourceType.cs" />
