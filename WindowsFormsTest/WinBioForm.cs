@@ -44,11 +44,13 @@ namespace WindowsFormsTest
             Log(string.Format("Device instance id: {0}", unit.DeviceInstanceId));
             Log(string.Format("Using database: {0}", DatabaseId));
             _session = WinBio.OpenSession(WinBioBiometricType.Fingerprint, WinBioPoolType.Private, WinBioSessionFlag.Basic, new[] { _unitId }, DatabaseId);
+            //_session = WinBio.OpenSession(WinBioBiometricType.Fingerprint);
             Log("Session opened: " + _session.Value);
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            if (!_session.IsValid) return;
             WinBio.CloseSession(_session);
             _session.Invalidate();
             Log("Session closed");
@@ -82,7 +84,23 @@ namespace WindowsFormsTest
                     WinBioBiometricSubType subFactor;
                     WinBioRejectDetail rejectDetail;
                     WinBio.Identify(_session, out identity, out subFactor, out rejectDetail);
-                    Log(string.Format("Identity: {0} ({1})", identity, subFactor));
+                    Log(string.Format("Identity: {0}", identity));
+                }
+                catch (WinBioException ex)
+                {
+                    Log(ex);
+                }
+            });
+        }
+
+        private void buttonEnroll_Click(object sender, EventArgs e)
+        {
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                try
+                {
+                    var identity = AddEnrollment(_session, _unitId, WinBioBiometricSubType.RhIndexFinger);
+                    Log(string.Format("Identity: {0}", identity));
                 }
                 catch (WinBioException ex)
                 {
@@ -94,6 +112,37 @@ namespace WindowsFormsTest
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             WinBio.Cancel(_session);
+        }
+
+        private WinBioIdentity AddEnrollment(WinBioSessionHandle session, int unitId, WinBioBiometricSubType subType)
+        {
+            Log(string.Format("Beginning enrollment of {0}:", subType));
+            WinBio.EnrollBegin(session, subType, unitId);
+            var code = WinBioErrorCode.MoreData;
+            for (var swipes = 1; code != WinBioErrorCode.Ok; swipes++)
+            {
+                WinBioRejectDetail rejectDetail;
+                code = WinBio.EnrollCapture(session, out rejectDetail);
+                switch (code)
+                {
+                    case WinBioErrorCode.MoreData:
+                        Log(string.Format("Swipe {0} was good", swipes));
+                        break;
+                    case WinBioErrorCode.BadCapture:
+                        Log(string.Format("Swipe {0} was bad: {1}", swipes, rejectDetail));
+                        break;
+                    case WinBioErrorCode.Ok:
+                        Log(string.Format("Enrollment complete with {0} swipes", swipes));
+                        break;
+                    default:
+                        throw new WinBioException(code, "WinBioEnrollCapture failed");
+                }
+            }
+            Log(string.Format("Committing enrollment.."));
+            WinBioIdentity identity;
+            var isNewTemplate = WinBio.EnrollCommit(session, out identity);
+            Log(string.Format(isNewTemplate ? "New template committed." : "Template already existing."));
+            return identity;
         }
     }
 }

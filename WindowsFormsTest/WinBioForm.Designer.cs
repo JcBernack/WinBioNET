@@ -32,6 +32,7 @@
             this.buttonLocateSensor = new System.Windows.Forms.Button();
             this.richTextBox = new System.Windows.Forms.RichTextBox();
             this.buttonCancel = new System.Windows.Forms.Button();
+            this.buttonEnroll = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // buttonIdentify
@@ -67,7 +68,7 @@
             // 
             // buttonCancel
             // 
-            this.buttonCancel.Location = new System.Drawing.Point(232, 12);
+            this.buttonCancel.Location = new System.Drawing.Point(313, 12);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 3;
@@ -75,11 +76,22 @@
             this.buttonCancel.UseVisualStyleBackColor = true;
             this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
+            // buttonEnroll
+            // 
+            this.buttonEnroll.Location = new System.Drawing.Point(232, 12);
+            this.buttonEnroll.Name = "buttonEnroll";
+            this.buttonEnroll.Size = new System.Drawing.Size(75, 23);
+            this.buttonEnroll.TabIndex = 4;
+            this.buttonEnroll.Text = "Enroll";
+            this.buttonEnroll.UseVisualStyleBackColor = true;
+            this.buttonEnroll.Click += new System.EventHandler(this.buttonEnroll_Click);
+            // 
             // WinBioForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(600, 336);
+            this.Controls.Add(this.buttonEnroll);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.richTextBox);
             this.Controls.Add(this.buttonLocateSensor);
@@ -96,6 +108,7 @@
         private System.Windows.Forms.Button buttonLocateSensor;
         private System.Windows.Forms.RichTextBox richTextBox;
         private System.Windows.Forms.Button buttonCancel;
+        private System.Windows.Forms.Button buttonEnroll;
     }
 }
 
