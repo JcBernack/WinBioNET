@@ -4,12 +4,11 @@ namespace WinBioNET.Enums
 {
     [Flags]
     public enum WinBioDatabaseFlag
-        : uint
     {
         /// <summary>
         /// Represents a mask for the flag bits.
         /// </summary>
-        FlagMask = 0xFFFF0000,
+        //FlagMask = 0xFFFF0000,
 
         /// <summary>
         /// The database resides on a removable drive.
@@ -24,7 +23,7 @@ namespace WinBioNET.Enums
         /// <summary>
         /// Represents a mask for the type bits.
         /// </summary>
-        TypeMask = 0x0000FFFF,
+        //TypeMask = 0x0000FFFF,
 
         /// <summary>
         /// The database is contained in a file.

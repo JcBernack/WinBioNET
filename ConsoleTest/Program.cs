@@ -10,6 +10,7 @@ namespace ConsoleTest
         
         public static void Main()
         {
+            WinBioConfiguration.Test();
             try
             {
                 var databases = WinBio.EnumDatabases(WinBioBiometricType.Fingerprint);

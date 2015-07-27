@@ -8,6 +8,11 @@ namespace WinBioNET
     {
         public WinBioErrorCode ErrorCode { get; private set; }
 
+        public WinBioException(string message)
+            : base(message)
+        {
+        }
+
         public WinBioException(WinBioErrorCode errorCode)
             : base(errorCode.ToString())
         {

@@ -56,6 +56,9 @@
     <Compile Include="Enums\WinBioSessionFlag.cs" />
     <Compile Include="Enums\WinBioSettingSourceType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Configuration\WinBioDatabaseKey.cs" />
+    <Compile Include="Configuration\WinBioRegistryKeyBase.cs" />
+    <Compile Include="Configuration\WinBioSensorKey.cs" />
     <Compile Include="Unused\WinBioBir.cs" />
     <Compile Include="Unused\WinBioBirData.cs" />
     <Compile Include="Unused\WinBioDatabase.cs" />
@@ -66,6 +69,7 @@
     <Compile Include="WinBioBspSchema.cs" />
     <Compile Include="WinBioException.cs" />
     <Compile Include="WinBioIdentity.cs" />
+    <Compile Include="WinBioConfiguration.cs" />
     <Compile Include="WinBioSessionHandle.cs" />
     <Compile Include="WinBio.cs" />
     <Compile Include="WinBioStorageSchema.cs" />
