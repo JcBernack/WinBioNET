@@ -22,19 +22,19 @@ HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WbioSrvc\Databases\{ + Data
 where DatabaseId is a Guid
 
 # Device configuration fields are:
-DWORD SensorMode			Insert 1 or 2 for WinBioSensorMode.Basic and Advanced.
-DWORD SystemSensor			Insert 0, a value of 1 corresponds to the system pool.
-SZ    DatabaseId			Insert guid of correspondig database.
-SZ    SensorAdapterBinary	Insert path to dll, copy from default configuration.
-SZ    EngineAdapterBinary	Insert path to dll, copy from default configuration.
-SZ    StorageAdapterBinary	Insert path to dll, copy from default configuration.
+DWORD SensorMode            Insert 1 or 2 for WinBioSensorMode.Basic and Advanced.
+DWORD SystemSensor          Insert 0, a value of 1 corresponds to the system pool.
+SZ    DatabaseId            Insert Guid of corresponding database (without braces).
+SZ    SensorAdapterBinary   Insert path to dll, copy from default configuration.
+SZ    EngineAdapterBinary   Insert path to dll, copy from default configuration.
+SZ    StorageAdapterBinary  Insert path to dll, copy from default configuration.
 
 # Database fields are:
-DWORD Attributes		Insert 1 for WinBioDatabaseFlag.TypeFile. Probably can contain any value of WinBioDatabaseFlag.
-DWORD AutoCreate		Insert 1.
-DWORD AutoName			Insert 1, will be set to 0 upon database creation.
-DWORD BiometricType		Insert 8 for WinBioBiometricType.Fingerprint.
-SZ    ConnectionString	Insert empty. Probably used if something other than WinBioDatabaseFlag.TypeFile is used.
-SZ    FilePath			Insert empty, will be set by the storage adapter to the path of the database file on creation.
-SZ    Format			Insert an empty Guid: "00000000-0000-0000-0000-000000000000". No idea what it means.
-DWORD InitialSize		Insert (int)32. No idea what it actually means. Size of what? I what unit?
+DWORD Attributes            Insert 1 for WinBioDatabaseFlag.TypeFile. Probably can contain any value of WinBioDatabaseFlag.
+DWORD AutoCreate            Insert 1.
+DWORD AutoName              Insert 1, will be set to 0 upon database creation.
+DWORD BiometricType         Insert 8 for WinBioBiometricType.Fingerprint.
+SZ    ConnectionString      Insert empty string. Probably used if something other than WinBioDatabaseFlag.TypeFile is used.
+SZ    FilePath              Insert empty string, will be set by the storage adapter to the path of the database file on creation.
+SZ    Format                Insert an empty Guid: "00000000-0000-0000-0000-000000000000". No idea what it means.
+DWORD InitialSize           Insert (int)32. No idea what it actually means. Size of what? I what unit?
