@@ -12,13 +12,9 @@ namespace WinBioNET
         private const string DatabaseKeyName = @"SYSTEM\CurrentControlSet\Services\WbioSrvc\Databases";
         private const string UnitKeyName = @"System\CurrentControlSet\Enum\{0}\Device Parameters\WinBio\Configurations";
 
-        public static void Test()
-        {
-        }
-
         private static string KeyGuid(Guid guid)
         {
-            return string.Format("{{{0}}}", guid);
+            return guid.ToString("B").ToUpperInvariant();
         }
 
         /// <summary>
@@ -128,7 +124,7 @@ namespace WinBioNET
         {
             var unitSchema = WinBio.EnumBiometricUnits(WinBioBiometricType.Fingerprint).Single(_ => _.UnitId == unitId);
             var unitName = string.Format(UnitKeyName, unitSchema.DeviceInstanceId);
-            var highest = 0;
+            var highest = -1;
             WinBioSensorKey newConfig = null;
             using (var unitKey = Registry.LocalMachine.OpenSubKey(unitName, true))
             {
@@ -149,8 +145,9 @@ namespace WinBioNET
                         newConfig = config;
                     }
                 }
-                if (newConfig == null) throw new Exception("dafuq");
+                if (newConfig == null || highest < 0) throw new Exception("dafuq");
                 // write to registry at the next highest free number
+                highest++;
                 newConfig.DatabaseId = databaseId;
                 newConfig.SystemSensor = 0;
                 using (var confKey = unitKey.CreateSubKey(highest.ToString()))
@@ -189,24 +186,3 @@ namespace WinBioNET
         }
     }
 }
-
-/*
- * 
- * Add Unit:
- *   Check all configs for given UnitId for databaseId.
- *   Find first config with SystemSensor == 1.
- *   Add new config with highest free SubKeyName into the Key of the unit configurations.
- * 
- * Remove Unit:
- *   Remove all SubKeys of the unit configuration key where databaseId matches.
- * 
- * Remove Database:
- *   Iterate over all units.
- *     "Remove Unit" with databaseId.
- * 
- * Add Database:
- *   Find first unit configuration with SystemSensor == 1 for a given UnitId.
- *   Find corresponding database.
- *   Add new compatible database to database key.
- * 
-*/
