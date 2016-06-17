@@ -12,12 +12,6 @@ namespace ConsoleTest
         {
             try
             {
-                var databases = WinBio.EnumDatabases(WinBioBiometricType.Fingerprint);
-                Console.WriteLine("Found {0} databases", databases.Length);
-                for (var i = 0; i < databases.Length; i++)
-                {
-                    Console.WriteLine("DatabaseId {0}: {1}", i, databases[i].DatabaseId);
-                }
                 var units = WinBio.EnumBiometricUnits(WinBioBiometricType.Fingerprint);
                 Console.WriteLine("Found {0} units", units.Length);
                 if (units.Length == 0) return;
@@ -25,6 +19,21 @@ namespace ConsoleTest
                 var unitId = unit.UnitId;
                 Console.WriteLine("Using unit id: {0}", unitId);
                 Console.WriteLine("Device instance id: {0}", unit.DeviceInstanceId);
+                var databases = WinBio.EnumDatabases(WinBioBiometricType.Fingerprint);
+                Console.WriteLine("Found {0} databases", databases.Length);
+                for (var i = 0; i < databases.Length; i++)
+                {
+                    Console.WriteLine("DatabaseId {0}: {1}", i, databases[i].DatabaseId);
+                }
+                if (WinBioConfiguration.DatabaseExists(DatabaseId))
+                {
+                    Console.WriteLine("Removing database: {0}", DatabaseId);
+                    WinBioConfiguration.RemoveDatabase(DatabaseId);
+                }
+                Console.WriteLine("Creating database: {0}", DatabaseId);
+                WinBioConfiguration.AddDatabase(DatabaseId, unitId);
+                Console.WriteLine("Adding sensor to the pool: {0}", unitId);
+                WinBioConfiguration.AddUnit(DatabaseId, unitId);
                 Console.WriteLine("Opening biometric session");
                 var session = WinBio.OpenSession(WinBioBiometricType.Fingerprint, WinBioPoolType.Private, WinBioSessionFlag.Basic, new[] { unitId }, DatabaseId);
                 try
