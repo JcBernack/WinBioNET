@@ -27,7 +27,7 @@ namespace WinBioNET.Configuration
             AutoCreate = 1;
             AutoName = 1;
             InitialSize = 32;
-            FilePath = "";
+            FilePath = Environment.SystemDirectory + string.Format(@"\WINBIODATABASE\{0}.DAT", database.DatabaseId.ToString().ToUpper());
             ConnectionString = "";
         }
     }
