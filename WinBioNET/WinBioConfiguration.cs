@@ -84,8 +84,26 @@ namespace WinBioNET
         {
             // find database, throws if not found
             var database = WinBio.EnumDatabases(WinBioBiometricType.Fingerprint).Single(_ => _.DatabaseId == databaseId);
+
             // delete template file, throws if not authorized
-            File.Delete(database.FilePath);
+            // make sure to grant permissions to folder C:\WINDOWS\SYSTEM32\WINBIODATABASE or similar in your machine
+            // get ownership of the folder WINBIODATABASE then grant full control for your user
+            if (File.Exists(database.FilePath))
+            {
+                File.Delete(database.FilePath);
+            }
+            else
+            {
+                // For 32-bits process running in 64 bits OS
+                string windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                string filePath = string.Format(@"{0}\SYSTEM32", windowsPath);
+                string filePathSysNative = string.Format(@"{0}\SysNative", windowsPath);
+
+                if (File.Exists(database.FilePath.Replace(filePath, filePathSysNative)))
+                {
+                    File.Delete(database.FilePath.Replace(filePath, filePathSysNative));
+                }
+            }
             // erase sensor configurations for this database
             foreach (var unitSchema in WinBio.EnumBiometricUnits(WinBioBiometricType.Fingerprint))
             {

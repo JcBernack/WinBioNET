@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Windows.Forms;
+using System.ServiceProcess;
 using WinBioNET;
 using WinBioNET.Enums;
 
@@ -37,18 +38,39 @@ namespace WindowsFormsTest
         {
             var units = WinBio.EnumBiometricUnits(WinBioBiometricType.Fingerprint);
             Log(string.Format("Found {0} units", units.Length));
-            if (units.Length == 0) return;
+
+            // Check if we have a connected fingerprint sensor
+            if (units.Length == 0)
+            {
+                MessageBox.Show("Error: Fingerprint sensor not found! Exiting...", "Error", MessageBoxButtons.OK);
+                Application.Exit();
+                return;
+            }
+            
             var unit = units[0];
             _unitId = unit.UnitId;
             Log(string.Format("Using unit id: {0}", _unitId));
             Log(string.Format("Device instance id: {0}", unit.DeviceInstanceId));
             Log(string.Format("Using database: {0}", DatabaseId));
+
+            // Check if we need to create a new database
+            if (WinBioConfiguration.DatabaseExists(DatabaseId) == false)
+            {
+                InitialStart();
+            }
+            else
+            {
+                OpenBiometricSession();
+            }
+        }
+
+        private void OpenBiometricSession()
+        {
             _session = WinBio.OpenSession(WinBioBiometricType.Fingerprint, WinBioPoolType.Private, WinBioSessionFlag.Basic, new[] { _unitId }, DatabaseId);
-            //_session = WinBio.OpenSession(WinBioBiometricType.Fingerprint);
             Log("Session opened: " + _session.Value);
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
+        private void WinBioForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!_session.IsValid) return;
             WinBio.CloseSession(_session);
@@ -143,6 +165,98 @@ namespace WindowsFormsTest
             var isNewTemplate = WinBio.EnrollCommit(session, out identity);
             Log(string.Format(isNewTemplate ? "New template committed." : "Template already existing."));
             return identity;
+        }
+
+        private void btnRebuildDatabase_Click(object sender, EventArgs e)
+        {
+            // Close existing session
+            if (_session.IsValid)
+            {
+                WinBio.Cancel(_session);
+            }
+
+            InitialStart();
+        }
+
+        private void InitialStart()
+        {
+            // Stop Windows Biometric Service to apply changes
+            RestartService("WbioSrvc", 5000, ServiceMode.Stop);
+
+            var databases = WinBio.EnumDatabases(WinBioBiometricType.Fingerprint);
+            Console.WriteLine("Found {0} databases", databases.Length);
+            for (var i = 0; i < databases.Length; i++)
+            {
+                Console.WriteLine("DatabaseId {0}: {1}", i, databases[i].DatabaseId);
+            }
+            if (WinBioConfiguration.DatabaseExists(DatabaseId))
+            {
+                Console.WriteLine("Removing database: {0}", DatabaseId);
+                WinBioConfiguration.RemoveDatabase(DatabaseId);
+            }
+
+            // Start Windows Biometric Service to apply changes
+            RestartService("WbioSrvc", 5000, ServiceMode.Start);
+
+            Console.WriteLine("Creating database: {0}", DatabaseId);
+            WinBioConfiguration.AddDatabase(DatabaseId, _unitId);
+            Console.WriteLine("Adding sensor to the pool: {0}", _unitId);
+            WinBioConfiguration.AddUnit(DatabaseId, _unitId);
+
+            // Restart Windows Biometric Service to apply changes
+            RestartService("WbioSrvc", 5000, ServiceMode.Restart);
+
+            Log("Successfully recreated database.");
+
+            OpenBiometricSession();
+        }
+
+        public enum ServiceMode
+        {
+            Restart,
+            Stop,
+            Start
+        }
+
+        private void RestartService(string serviceName, int timeoutMilliseconds, ServiceMode serviceMode)
+        {
+            ServiceController service = new ServiceController(serviceName);
+            try
+            {
+                int millisec1 = Environment.TickCount;
+                TimeSpan timeout = TimeSpan.FromMilliseconds(timeoutMilliseconds);
+
+                if (serviceMode == ServiceMode.Start)
+                    goto start;
+
+                service.Stop();
+                service.WaitForStatus(ServiceControllerStatus.Stopped, timeout);
+
+                if (serviceMode == ServiceMode.Stop)
+                    return;
+
+                service.Start();
+
+                start:
+                // count the rest of the timeout
+                int millisec2 = Environment.TickCount;
+                timeout = TimeSpan.FromMilliseconds(timeoutMilliseconds - (millisec2 - millisec1));
+
+                service.WaitForStatus(ServiceControllerStatus.Running, timeout);
+            }
+            catch
+            {
+                MessageBox.Show("Error restarting Windows Biometric Service", "Error", MessageBoxButtons.OK);
+            }
+        }
+
+        private void richTextBox_TextChanged(object sender, EventArgs e)
+        {
+            // set the current caret position to the end
+            richTextBox.SelectionStart = richTextBox.Text.Length;
+
+            // scroll it automatically
+            richTextBox.ScrollToCaret();
         }
     }
 }
