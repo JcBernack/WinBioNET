@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using WinBioNET.Enums;
 
@@ -102,16 +103,56 @@ namespace WinBioNET
             WinBioSessionHandle sessionHandle,
             WinBioBirPurpose purpose,
             WinBioBirDataFlags flags,
-            out int sampleSize,
-            out WinBioRejectDetail rejectDetail)
+            out WinBioRejectDetail rejectDetail,
+            out Size imageSize,
+            out IntPtr firstPixelPointer)
         {
             int unitId;
-            IntPtr pointer;
-            var code = CaptureSample(sessionHandle, purpose, flags, out unitId, out pointer, out sampleSize, out rejectDetail);
+            int sampleSize;
+            IntPtr samplePointer;
+            var code = CaptureSample(sessionHandle, purpose, flags, out unitId, out samplePointer, out sampleSize, out rejectDetail);
             WinBioException.ThrowOnError(code, "WinBioCaptureSample failed");
-            //TODO: parse WINBIO_BIR structure at pointer
-            Free(pointer);
+            WinBioBir sample = (WinBioBir)Marshal.PtrToStructure(samplePointer, typeof(WinBioBir));
+            IntPtr birHeaderPointer = samplePointer + sample.HeaderBlock.Offset;
+            IntPtr ansiHeaderPointer = samplePointer + sample.StandardDataBlock.Offset;
+            IntPtr ansiRecordPointer = ansiHeaderPointer + Marshal.SizeOf(typeof(WinBioBdbAnsi381Header));
+
+            WinBioBdbAnsi381Record ansiRecord = (WinBioBdbAnsi381Record)Marshal.PtrToStructure(
+                ansiRecordPointer, typeof(WinBioBdbAnsi381Record));
+
+            imageSize = new Size(ansiRecord.HorizontalLineLength, ansiRecord.VerticalLineLength);
+            firstPixelPointer = ansiRecordPointer + Marshal.SizeOf(typeof(WinBioBdbAnsi381Record));
+
+            Free(samplePointer);
             return unitId;
+        }
+
+        public static Bitmap CaptureSample(
+            WinBioSessionHandle sessionHandle,
+            WinBioBirPurpose purpose,
+            out WinBioRejectDetail rejectDetail)
+        {
+            Size imageSize;
+            IntPtr firstPixelPointer;
+            var unitId = CaptureSample(sessionHandle, purpose, WinBioBirDataFlags.Raw, out rejectDetail, out imageSize, out firstPixelPointer);
+            if (rejectDetail != WinBioRejectDetail.None)
+                throw new WinBioException(string.Format("WinBioCaptureSample failed: {0}", rejectDetail));
+
+            int pixelCount = imageSize.Width * imageSize.Height;
+            byte[] image = new byte[pixelCount];
+            Marshal.Copy(firstPixelPointer, image, 0, pixelCount);
+
+            Bitmap bitmap = new Bitmap(imageSize.Width, imageSize.Height);
+            for (int y = 0; y < imageSize.Height; y++)
+            {
+                for (int x = 0; x < imageSize.Width; x++)
+                {
+                    byte color = image[y * imageSize.Width + x];
+                    bitmap.SetPixel(x, y, Color.FromArgb(color, color, color));
+                }
+            }
+
+            return bitmap;
         }
 
         [DllImport(LibName, EntryPoint = "WinBioLocateSensor")]

@@ -38,6 +38,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\WinBioBiometricSubType.cs" />
@@ -55,21 +56,26 @@
     <Compile Include="Enums\WinBioSensorSubType.cs" />
     <Compile Include="Enums\WinBioSessionFlag.cs" />
     <Compile Include="Enums\WinBioSettingSourceType.cs" />
+    <Compile Include="LargeInteger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Configuration\WinBioDatabaseKey.cs" />
     <Compile Include="Configuration\WinBioRegistryKeyBase.cs" />
     <Compile Include="Configuration\WinBioSensorKey.cs" />
-    <Compile Include="Unused\WinBioBir.cs" />
-    <Compile Include="Unused\WinBioBirData.cs" />
+    <Compile Include="WinBioBir.cs" />
+    <Compile Include="WinBioBirData.cs" />
     <Compile Include="Unused\WinBioDatabase.cs" />
     <Compile Include="Unused\WinBioObject.cs" />
     <Compile Include="Unused\WinBioResource.cs" />
     <Compile Include="Unused\WinBioSession.cs" />
     <Compile Include="Unused\WinBioUnit.cs" />
+    <Compile Include="WinBioBdbAnsi381Header.cs" />
+    <Compile Include="WinBioBdbAnsi381Record.cs" />
+    <Compile Include="WinBioBirHeader.cs" />
     <Compile Include="WinBioBspSchema.cs" />
     <Compile Include="WinBioException.cs" />
     <Compile Include="WinBioIdentity.cs" />
     <Compile Include="WinBioConfiguration.cs" />
+    <Compile Include="WinBioRegisteredFormat.cs" />
     <Compile Include="WinBioSessionHandle.cs" />
     <Compile Include="WinBio.cs" />
     <Compile Include="WinBioStorageSchema.cs" />
