@@ -260,7 +260,7 @@ namespace WindowsFormsTest
             richTextBox.ScrollToCaret();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonCaptureSample_Click(object sender, EventArgs e)
         {
             ThreadPool.QueueUserWorkItem(delegate
             {
@@ -277,7 +277,7 @@ namespace WindowsFormsTest
                     else
                     {
                         Log("Captured sample successfully!");
-                        this.pictureBox1.Image = image;
+                        this.fingerprintPictureBox.BackgroundImage = image;
                     }
                 }
                 catch (WinBioException ex)

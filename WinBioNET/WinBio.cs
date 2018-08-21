@@ -1,5 +1,7 @@
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.InteropServices;
 using WinBioNET.Enums;
 
@@ -128,19 +130,13 @@ namespace WinBioNET
             Size imageSize = new Size(ansiRecord.HorizontalLineLength, ansiRecord.VerticalLineLength);
             IntPtr firstPixelPointer = ansiRecordPointer + Marshal.SizeOf(typeof(WinBioBdbAnsi381Record));
 
-            int pixelCount = imageSize.Width * imageSize.Height;
-            byte[] image = new byte[pixelCount];
-            Marshal.Copy(firstPixelPointer, image, 0, pixelCount);
-
-            fingerprintImage = new Bitmap(imageSize.Width, imageSize.Height);
-            for (int y = 0; y < imageSize.Height; y++)
+            fingerprintImage = new Bitmap(imageSize.Width, imageSize.Height, 1 * imageSize.Width, PixelFormat.Format8bppIndexed, firstPixelPointer);
+            ColorPalette palette = fingerprintImage.Palette;
+            for (int i = 0; i <= 255; i++)
             {
-                for (int x = 0; x < imageSize.Width; x++)
-                {
-                    byte color = image[y * imageSize.Width + x];
-                    fingerprintImage.SetPixel(x, y, Color.FromArgb(color, color, color));
-                }
+                palette.Entries[i] = Color.FromArgb(i, i, i);
             }
+            fingerprintImage.Palette = palette;
 
             Free(samplePointer);
 
