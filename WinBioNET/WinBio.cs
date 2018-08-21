@@ -104,8 +104,7 @@ namespace WinBioNET
             WinBioBirPurpose purpose,
             WinBioBirDataFlags flags,
             out WinBioRejectDetail rejectDetail,
-            out Size imageSize,
-            out IntPtr firstPixelPointer)
+            out Bitmap fingerprintImage)
         {
             int unitId;
             int sampleSize;
@@ -113,6 +112,12 @@ namespace WinBioNET
             var code = CaptureSample(sessionHandle, purpose, flags, out unitId, out samplePointer, out sampleSize, out rejectDetail);
             WinBioException.ThrowOnError(code, "WinBioCaptureSample failed");
             WinBioBir sample = (WinBioBir)Marshal.PtrToStructure(samplePointer, typeof(WinBioBir));
+
+            if (sample.StandardDataBlock.Size == 0)
+            {
+                throw new WinBioException("Your fingerprint sensor doesn't support StandardDataBlock");
+            }
+
             IntPtr birHeaderPointer = samplePointer + sample.HeaderBlock.Offset;
             IntPtr ansiHeaderPointer = samplePointer + sample.StandardDataBlock.Offset;
             IntPtr ansiRecordPointer = ansiHeaderPointer + Marshal.SizeOf(typeof(WinBioBdbAnsi381Header));
@@ -120,39 +125,26 @@ namespace WinBioNET
             WinBioBdbAnsi381Record ansiRecord = (WinBioBdbAnsi381Record)Marshal.PtrToStructure(
                 ansiRecordPointer, typeof(WinBioBdbAnsi381Record));
 
-            imageSize = new Size(ansiRecord.HorizontalLineLength, ansiRecord.VerticalLineLength);
-            firstPixelPointer = ansiRecordPointer + Marshal.SizeOf(typeof(WinBioBdbAnsi381Record));
-
-            Free(samplePointer);
-            return unitId;
-        }
-
-        public static Bitmap CaptureSample(
-            WinBioSessionHandle sessionHandle,
-            WinBioBirPurpose purpose,
-            out WinBioRejectDetail rejectDetail)
-        {
-            Size imageSize;
-            IntPtr firstPixelPointer;
-            var unitId = CaptureSample(sessionHandle, purpose, WinBioBirDataFlags.Raw, out rejectDetail, out imageSize, out firstPixelPointer);
-            if (rejectDetail != WinBioRejectDetail.None)
-                throw new WinBioException(string.Format("WinBioCaptureSample failed: {0}", rejectDetail));
+            Size imageSize = new Size(ansiRecord.HorizontalLineLength, ansiRecord.VerticalLineLength);
+            IntPtr firstPixelPointer = ansiRecordPointer + Marshal.SizeOf(typeof(WinBioBdbAnsi381Record));
 
             int pixelCount = imageSize.Width * imageSize.Height;
             byte[] image = new byte[pixelCount];
             Marshal.Copy(firstPixelPointer, image, 0, pixelCount);
 
-            Bitmap bitmap = new Bitmap(imageSize.Width, imageSize.Height);
+            fingerprintImage = new Bitmap(imageSize.Width, imageSize.Height);
             for (int y = 0; y < imageSize.Height; y++)
             {
                 for (int x = 0; x < imageSize.Width; x++)
                 {
                     byte color = image[y * imageSize.Width + x];
-                    bitmap.SetPixel(x, y, Color.FromArgb(color, color, color));
+                    fingerprintImage.SetPixel(x, y, Color.FromArgb(color, color, color));
                 }
             }
 
-            return bitmap;
+            Free(samplePointer);
+
+            return unitId;
         }
 
         [DllImport(LibName, EntryPoint = "WinBioLocateSensor")]
