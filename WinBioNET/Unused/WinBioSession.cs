@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using WinBioNET.Enums;
 
 namespace WinBioNET.Unused
@@ -40,11 +41,11 @@ namespace WinBioNET.Unused
 
         public void CaptureSample(WinBioBirPurpose purpose, WinBioBirDataFlags dataFlags)
         {
-            int sampleSize;
+            Bitmap image;
             WinBioRejectDetail rejectDetail;
-            var unitId = WinBio.CaptureSample(_handle, purpose, dataFlags, out sampleSize, out rejectDetail);
+            var unitId = WinBio.CaptureSample(_handle, purpose, dataFlags, out rejectDetail, out image);
             Console.WriteLine("Unit id: {0}", unitId);
-            Console.WriteLine("Captured sample size: {0}", sampleSize);
+            Console.WriteLine("Captured sample size: {0}x{1}", image.Width, image.Height);
             Console.WriteLine("Reject details: {0}", rejectDetail);
         }
     }

@@ -1,4 +1,4 @@
-namespace WinBioNET.Unused
+namespace WinBioNET
 {
     public struct WinBioBirData
     {

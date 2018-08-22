@@ -1,4 +1,7 @@
 using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.InteropServices;
 using WinBioNET.Enums;
 
@@ -102,15 +105,41 @@ namespace WinBioNET
             WinBioSessionHandle sessionHandle,
             WinBioBirPurpose purpose,
             WinBioBirDataFlags flags,
-            out int sampleSize,
-            out WinBioRejectDetail rejectDetail)
+            out WinBioRejectDetail rejectDetail,
+            out Bitmap fingerprintImage)
         {
             int unitId;
-            IntPtr pointer;
-            var code = CaptureSample(sessionHandle, purpose, flags, out unitId, out pointer, out sampleSize, out rejectDetail);
+            int sampleSize;
+            IntPtr samplePointer;
+            var code = CaptureSample(sessionHandle, purpose, flags, out unitId, out samplePointer, out sampleSize, out rejectDetail);
             WinBioException.ThrowOnError(code, "WinBioCaptureSample failed");
-            //TODO: parse WINBIO_BIR structure at pointer
-            Free(pointer);
+            WinBioBir sample = (WinBioBir)Marshal.PtrToStructure(samplePointer, typeof(WinBioBir));
+
+            if (sample.StandardDataBlock.Size == 0)
+            {
+                throw new WinBioException("Your fingerprint sensor doesn't support StandardDataBlock");
+            }
+
+            IntPtr birHeaderPointer = samplePointer + sample.HeaderBlock.Offset;
+            IntPtr ansiHeaderPointer = samplePointer + sample.StandardDataBlock.Offset;
+            IntPtr ansiRecordPointer = ansiHeaderPointer + Marshal.SizeOf(typeof(WinBioBdbAnsi381Header));
+
+            WinBioBdbAnsi381Record ansiRecord = (WinBioBdbAnsi381Record)Marshal.PtrToStructure(
+                ansiRecordPointer, typeof(WinBioBdbAnsi381Record));
+
+            Size imageSize = new Size(ansiRecord.HorizontalLineLength, ansiRecord.VerticalLineLength);
+            IntPtr firstPixelPointer = ansiRecordPointer + Marshal.SizeOf(typeof(WinBioBdbAnsi381Record));
+
+            fingerprintImage = new Bitmap(imageSize.Width, imageSize.Height, 1 * imageSize.Width, PixelFormat.Format8bppIndexed, firstPixelPointer);
+            ColorPalette palette = fingerprintImage.Palette;
+            for (int i = 0; i <= 255; i++)
+            {
+                palette.Entries[i] = Color.FromArgb(i, i, i);
+            }
+            fingerprintImage.Palette = palette;
+
+            Free(samplePointer);
+
             return unitId;
         }
 

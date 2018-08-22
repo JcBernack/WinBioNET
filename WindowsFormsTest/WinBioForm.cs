@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using System.ServiceProcess;
@@ -66,7 +67,7 @@ namespace WindowsFormsTest
 
         private void OpenBiometricSession()
         {
-            _session = WinBio.OpenSession(WinBioBiometricType.Fingerprint, WinBioPoolType.Private, WinBioSessionFlag.Basic, new[] { _unitId }, DatabaseId);
+            _session = WinBio.OpenSession(WinBioBiometricType.Fingerprint, WinBioPoolType.System, WinBioSessionFlag.Raw, null, WinBioDatabaseId.Default);
             Log("Session opened: " + _session.Value);
         }
 
@@ -257,6 +258,33 @@ namespace WindowsFormsTest
 
             // scroll it automatically
             richTextBox.ScrollToCaret();
+        }
+
+        private void buttonCaptureSample_Click(object sender, EventArgs e)
+        {
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                Bitmap image;
+                WinBioRejectDetail rejectDetail;
+                Log("Capturing sample...");
+                try
+                {
+                    WinBio.CaptureSample(_session, WinBioBirPurpose.NoPurposeAvailable, WinBioBirDataFlags.Raw, out rejectDetail, out image);
+                    if (rejectDetail != WinBioRejectDetail.None)
+                    {
+                        Log(string.Format("CaptureSample failed! Reject detail: {0}", rejectDetail));
+                    }
+                    else
+                    {
+                        Log("Captured sample successfully!");
+                        this.fingerprintPictureBox.BackgroundImage = image;
+                    }
+                }
+                catch (WinBioException ex)
+                {
+                    Log(ex);
+                }
+            });
         }
     }
 }
